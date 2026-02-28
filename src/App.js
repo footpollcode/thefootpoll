@@ -1,23 +1,15 @@
-import logo from './logo.svg';
-import './App.css';
-
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      height: "100vh", background: "#080C12", color: "#00E5A0",
+      fontFamily: "sans-serif"
+    }}>
+      <h1 style={{ fontSize: 48, marginBottom: 16 }}>🚀 Hello World!</h1>
+      <p style={{ color: "#94A3B8", fontSize: 18 }}>
+        My survey dashboard is coming soon.
+      </p>
     </div>
   );
 }

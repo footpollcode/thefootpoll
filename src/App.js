@@ -176,12 +176,12 @@ export default function Dashboard() {
 
           <div style={{ marginBottom: 28 }}>
             <h1 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 52, letterSpacing: "0.05em", color: C.white, lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
-              {active === "Overview"     && "MATCH OVERVIEW"}
+              {active === "Overview"     && "FOOTBALL STATUS OVERVIEW"}
               {active === "Satisfaction" && "FAN SATISFACTION"}
               {active === "Trends"       && "SEASON TRENDS"}
               {active === "Categories"   && "PERFORMANCE RATINGS"}
             </h1>
-            <p style={{ color: C.muted, marginTop: 6, fontSize: 14 }}>Football Survey Dashboard · Mock Data 2026</p>
+            
           </div>
 
           {/* OVERVIEW */}
@@ -192,17 +192,20 @@ export default function Dashboard() {
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <div style={{
                   background: C.card, backdropFilter: "blur(12px)",
-                  borderRadius: 20, padding: "24px 36px",
+                  borderRadius: 20, padding: "32px 24px",
                   border: `1px solid rgba(245,197,24,0.3)`,
                   boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,197,24,0.1)`,
                   opacity: kpiVisible ? 1 : 0,
                   transform: kpiVisible ? "translateY(0)" : "translateY(20px)",
                   transition: "opacity 0.6s ease, transform 0.6s ease",
+                  width: "100%", maxWidth: 480,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", textAlign: "center",
                 }}>
-                  <div style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
                     Total Responses
                   </div>
-                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 56, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
+                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
                     {apiData ? apiData.totalResponses.toLocaleString() : "Loading..."}
                   </div>
                 </div>

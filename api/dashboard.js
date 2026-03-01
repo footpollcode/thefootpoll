@@ -15,11 +15,11 @@ export default async function handler(req, res) {
     // Get average match rating
     const { data } = await supabase
       .from('survey_responses')
-      .select('match_rating, satisfaction');
+      .select('rating, satisfaction');
 
     // Calculate average satisfaction
     const avgRating = data.reduce((sum, row) => 
-      sum + row.match_rating, 0) / data.length;
+      sum + row.rating, 0) / data.length;
 
     res.status(200).json({
       totalResponses: count,

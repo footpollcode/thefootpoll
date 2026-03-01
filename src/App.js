@@ -108,9 +108,7 @@ function Card({ children, title, style = {} }) {
 const navItems = ["Overview", "Satisfaction", "Trends", "Categories"];
 
 export default function Dashboard() {
-    if (window.location.pathname === '/survey') {
-    return <SurveyForm />;
-  }
+
   const [active, setActive] = useState("Overview");
   const [apiData, setApiData] = useState(null);
   const [kpiVisible, setKpiVisible] = useState(false);
@@ -125,6 +123,10 @@ export default function Dashboard() {
   useEffect(() => {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
+
+  if (window.location.pathname === '/survey') {
+    return <SurveyForm />;
+  }
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>

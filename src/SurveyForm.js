@@ -61,11 +61,12 @@ export default function SurveyForm() {
     rating:       0,
     satisfaction: "",
     comments:     "",
+    honeypot:     "",
   });
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
-  const canSubmit = form.team && form.rating > 0 && form.satisfaction;
+  const canSubmit = form.team && form.rating > 0 && form.satisfaction && !form.honeypot;
 
   const getRatingLabel = (r) => {
     if (r === 0)  return "";
@@ -313,6 +314,17 @@ export default function SurveyForm() {
                     }}
                   />
                 </div>
+
+                {/* Honeypot - invisible to humans, bots fill this in */}
+                <input
+                  type="text"
+                  name="honeypot"
+                  value={form.honeypot || ""}
+                  onChange={e => update('honeypot', e.target.value)}
+                  style={{ display: "none" }}
+                  tabIndex="-1"
+                  autoComplete="off"
+                />
 
                 {/* Error */}
                 {error && (

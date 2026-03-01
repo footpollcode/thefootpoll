@@ -7,22 +7,20 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   try {
-    // Get total responses count
     const { count } = await supabase
       .from('survey_responses')
       .select('*', { count: 'exact', head: true });
 
-    // Get average match rating
     const { data } = await supabase
       .from('survey_responses')
       .select('rating, satisfaction');
 
-    // Calculate average satisfaction
-    const avgRating = data.reduce((sum, row) => 
-      sum + row.rating, 0) / data.length;
+    const avgRating = data && data.length > 0
+      ? data.reduce((sum, row) => sum + row.rating, 0) / data.length
+      : 0;
 
     res.status(200).json({
-      totalResponses: count,
+      totalResponses: count || 0,
       avgSatisfaction: Math.round(avgRating * 10),
       lastUpdated: new Date().toLocaleDateString()
     });

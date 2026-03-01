@@ -1,5 +1,3 @@
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
-import SurveyForm from './SurveyForm';
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from "recharts";
 
@@ -109,7 +107,6 @@ function Card({ children, title, style = {} }) {
 const navItems = ["Overview", "Satisfaction", "Trends", "Categories"];
 
 export default function Dashboard() {
-
   const [active, setActive] = useState("Overview");
   const [apiData, setApiData] = useState(null);
   const [kpiVisible, setKpiVisible] = useState(false);
@@ -124,14 +121,6 @@ export default function Dashboard() {
   useEffect(() => {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
-
-if (window.location.pathname === '/survey') {
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
-      <SurveyForm />
-    </GoogleReCaptchaProvider>
-  );
-}
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>
@@ -159,7 +148,7 @@ if (window.location.pathname === '/survey') {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 28 }}>⚽</span>
             <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 24, letterSpacing: "0.1em", color: C.white }}>
-              FOOT<span style={{ color: C.accent }}>POLL</span>
+              THE<span style={{ color: C.accent }}>FOOTPOLL</span>
             </span>
           </div>
 
@@ -200,7 +189,7 @@ if (window.location.pathname === '/survey') {
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
               {/* KPI Card - now reads from API */}
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", justifyContent: "center" }}>
                 <div style={{
                   background: C.card, backdropFilter: "blur(12px)",
                   borderRadius: 20, padding: "24px 36px",
@@ -219,34 +208,20 @@ if (window.location.pathname === '/survey') {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
-                <Card title="Season Satisfaction Score">
-                  <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={mockData.monthly}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fill: C.muted, fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[60, 100]} tick={{ fill: C.muted, fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Line type="monotone" dataKey="score" stroke={C.accent} strokeWidth={3}
-                        dot={{ fill: C.accent, r: 5, strokeWidth: 0 }}
-                        activeDot={{ r: 7, fill: C.accent, stroke: "#000", strokeWidth: 2 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </Card>
-
-                <Card title="Fan Sentiment">
-                  <ResponsiveContainer width="100%" height={160}>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <Card title="Fan Sentiment" style={{ width: "100%", maxWidth: 480 }}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
-                      <Pie data={mockData.satisfaction} dataKey="value" cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={3}>
+                      <Pie data={mockData.satisfaction} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
                         {mockData.satisfaction.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", marginTop: 8 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", justifyContent: "center", marginTop: 12 }}>
                     {mockData.satisfaction.map((s, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color }} />
-                        <span style={{ fontSize: 11, color: C.muted }}>{s.name} <strong style={{ color: C.white }}>{s.value}%</strong></span>
+                        <span style={{ fontSize: 12, color: C.muted }}>{s.name} <strong style={{ color: C.white }}>{s.value}%</strong></span>
                       </div>
                     ))}
                   </div>

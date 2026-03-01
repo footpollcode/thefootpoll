@@ -1,3 +1,4 @@
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useState } from "react";
 
 const C = {
@@ -54,6 +55,7 @@ function PitchBackground() {
 export default function SurveyForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [error, setError] = useState(null);
   const [form, setForm] = useState({
     fan_name:     "",
@@ -78,26 +80,29 @@ export default function SurveyForm() {
     return             "🏆 Outstanding!";
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSubmitted(true);
-      } else {
-        setError(data.error || 'Something went wrong. Please try again.');
-      }
-    } catch (err) {
-      setError('Could not connect. Please try again.');
+const handleSubmit = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    // Get reCAPTCHA token
+    const token = await executeRecaptcha('survey_submit');
+
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, recaptchaToken: token }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setSubmitted(true);
+    } else {
+      setError(data.error || 'Something went wrong. Please try again.');
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    setError('Could not connect. Please try again.');
+  }
+  setLoading(false);
+};
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative" }}>

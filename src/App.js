@@ -1,3 +1,4 @@
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import SurveyForm from './SurveyForm';
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from "recharts";
@@ -124,9 +125,13 @@ export default function Dashboard() {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
 
-  if (window.location.pathname === '/survey') {
-    return <SurveyForm />;
-  }
+if (window.location.pathname === '/survey') {
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
+      <SurveyForm />
+    </GoogleReCaptchaProvider>
+  );
+}
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>

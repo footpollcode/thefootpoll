@@ -1,3 +1,4 @@
+import SurveyForm from './SurveyForm';
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from "recharts";
 
@@ -107,6 +108,9 @@ function Card({ children, title, style = {} }) {
 const navItems = ["Overview", "Satisfaction", "Trends", "Categories"];
 
 export default function Dashboard() {
+    if (window.location.pathname === '/survey') {
+    return <SurveyForm />;
+  }
   const [active, setActive] = useState("Overview");
   const [apiData, setApiData] = useState(null);
   const [kpiVisible, setKpiVisible] = useState(false);

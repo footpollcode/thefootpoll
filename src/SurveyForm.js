@@ -1,5 +1,5 @@
+import { useState, useEffect } from "react";
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { useState } from "react";
 
 const C = {
   pitch1:   "#2D7A3A",
@@ -21,14 +21,6 @@ const teams = [
   "Chelsea", "Inter Milan", "Juventus", "Liverpool",
   "Manchester City", "Manchester United", "PSG", "Real Madrid",
   "Tottenham", "AC Milan", "Atletico Madrid", "Other"
-];
-
-const happinessOptions = [
-  { label: "😄 Very Happy",   value: "Very Happy",   color: C.mint },
-  { label: "🙂 Happy",        value: "Happy",        color: C.sky },
-  { label: "😐 Neutral",      value: "Neutral",      color: C.accent },
-  { label: "😕 Unhappy",      value: "Unhappy",      color: C.peach },
-  { label: "😞 Very Unhappy", value: "Very Unhappy", color: C.coral },
 ];
 
 function PitchBackground() {
@@ -53,71 +45,108 @@ function PitchBackground() {
 }
 
 export default function SurveyForm() {
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { executeRecaptcha } = useGoogleReCaptcha();
-  const [error, setError] = useState(null);
-  const [form, setForm] = useState({
-    fan_name:     "",
-    team:         "",
-    rating:       0,
-    satisfaction: "",
-    comments:     "",
-    honeypot:     "",
-  });
 
-  const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  // Survey data from API
+  const [survey, setSurvey]       = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
-  const canSubmit = form.team && form.rating > 0 && form.satisfaction && !form.honeypot;
+  // Form state
+  const [fan_name,  setFanName]      = useState("");
+  const [team,      setTeam]         = useState("");
+  const [answers,   setAnswers]      = useState({});
+  const [honeypot,  setHoneypot]     = useState("");
+  const [submitted, setSubmitted]    = useState(false);
+  const [loading,   setLoading]      = useState(false);
+  const [error,     setError]        = useState(null);
 
-  const getRatingLabel = (r) => {
-    if (r === 0)  return "";
-    if (r <= 2)   return "😞 Terrible";
-    if (r <= 4)   return "😕 Poor";
-    if (r <= 6)   return "😐 Average";
-    if (r <= 8)   return "🙂 Good";
-    if (r <= 9)   return "😄 Great";
-    return             "🏆 Outstanding!";
+  // Fetch active survey + questions from API
+  useEffect(() => {
+    fetch('/api/survey')
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          setLoadError(data.error);
+        } else {
+          setSurvey(data.survey);
+          setQuestions(data.questions);
+        }
+        setLoadingData(false);
+      })
+      .catch(() => {
+        setLoadError('Could not load survey. Please try again later.');
+        setLoadingData(false);
+      });
+  }, []);
+
+  const selectAnswer = (questionId, answer) => {
+    setAnswers(prev => ({ ...prev, [questionId]: answer }));
   };
 
-const handleSubmit = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    // Get reCAPTCHA token
-    const token = await executeRecaptcha('survey_submit');
+  // All questions must be answered + team selected
+  const answeredCount = Object.keys(answers).length;
+  const canSubmit = team && answeredCount === questions.length && !honeypot;
 
-    const res = await fetch('/api/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, recaptchaToken: token }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setSubmitted(true);
-    } else {
-      setError(data.error || 'Something went wrong. Please try again.');
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await executeRecaptcha('survey_submit');
+
+      // Build answers array from state
+      const answersArray = Object.entries(answers).map(([question_id, answer]) => ({
+        question_id,
+        answer,
+      }));
+
+      const res = await fetch('/api/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          survey_id: survey.id,
+          fan_name,
+          team,
+          answers: answersArray,
+          honeypot,
+          recaptchaToken: token,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSubmitted(true);
+      } else {
+        setError(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      setError('Could not connect. Please try again.');
     }
-  } catch (err) {
-    setError('Could not connect. Please try again.');
-  }
-  setLoading(false);
-};
+    setLoading(false);
+  };
+
+  const resetForm = () => {
+    setSubmitted(false);
+    setFanName("");
+    setTeam("");
+    setAnswers({});
+    setHoneypot("");
+    setError(null);
+  };
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        input, textarea { outline: none; }
-        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.25); }
-        input:focus, textarea:focus { border-color: rgba(245,197,24,0.6) !important; }
+        input { outline: none; }
+        input::placeholder { color: rgba(255,255,255,0.25); }
+        input:focus { border-color: rgba(245,197,24,0.6) !important; }
         .team-btn { transition: all 0.2s; cursor: pointer; }
         .team-btn:hover { border-color: rgba(245,197,24,0.5) !important; color: rgba(245,197,24,0.8) !important; }
-        .rating-btn { transition: all 0.15s; cursor: pointer; }
-        .rating-btn:hover { transform: scale(1.15); }
-        .happy-btn { transition: all 0.2s; cursor: pointer; }
-        .happy-btn:hover { transform: translateX(4px); }
+        .option-btn { transition: all 0.2s; cursor: pointer; }
+        .option-btn:hover { transform: translateX(4px); border-color: rgba(245,197,24,0.4) !important; }
         .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
       `}</style>
 
@@ -135,18 +164,40 @@ const handleSubmit = async () => {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 28 }}>⚽</span>
             <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 24, letterSpacing: "0.1em", color: C.white }}>
-              FOOT<span style={{ color: C.accent }}>POLL</span>
+              THE<span style={{ color: C.accent }}>FOOTPOLL</span>
             </span>
           </div>
-          <span style={{ fontSize: 13, color: C.muted }}>Fan Survey · 2026</span>
+          <span style={{ fontSize: 13, color: C.muted }}>
+            {survey ? `${survey.month} ${survey.year} Survey` : "Fan Survey"}
+          </span>
         </div>
 
         {/* Content */}
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-          <div style={{ width: "100%", maxWidth: 580 }}>
+          <div style={{ width: "100%", maxWidth: 600 }}>
+
+            {/* LOADING STATE */}
+            {loadingData && (
+              <div style={{ textAlign: "center", color: C.muted, fontSize: 16 }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>⚽</div>
+                Loading survey...
+              </div>
+            )}
+
+            {/* LOAD ERROR */}
+            {loadError && (
+              <div style={{
+                background: C.card, backdropFilter: "blur(12px)",
+                borderRadius: 24, padding: "40px", textAlign: "center",
+                border: "1px solid rgba(255,107,107,0.3)",
+              }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
+                <p style={{ color: C.coral, fontSize: 16 }}>{loadError}</p>
+              </div>
+            )}
 
             {/* SUCCESS SCREEN */}
-            {submitted ? (
+            {!loadingData && !loadError && submitted && (
               <div style={{
                 background: C.card, backdropFilter: "blur(12px)",
                 borderRadius: 24, padding: "52px 40px", textAlign: "center",
@@ -158,13 +209,10 @@ const handleSubmit = async () => {
                   Thanks for voting!
                 </h2>
                 <p style={{ color: C.muted, fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
-                  Your response has been recorded and will<br />appear on the Footpoll dashboard!
+                  Your response for the <strong style={{ color: C.white }}>{survey?.title}</strong> has been recorded!
                 </p>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                  <button onClick={() => {
-                    setSubmitted(false);
-                    setForm({ fan_name: "", team: "", rating: 0, satisfaction: "", comments: "" });
-                  }} style={{
+                  <button onClick={resetForm} style={{
                     background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)",
                     borderRadius: 12, padding: "12px 24px", color: C.white,
                     fontSize: 14, fontWeight: 600, cursor: "pointer",
@@ -180,26 +228,39 @@ const handleSubmit = async () => {
                   </a>
                 </div>
               </div>
-            ) : (
+            )}
 
-              /* SURVEY FORM */
+            {/* SURVEY FORM */}
+            {!loadingData && !loadError && !submitted && survey && (
               <div style={{
                 background: C.card, backdropFilter: "blur(12px)",
                 borderRadius: 24, padding: "40px",
                 border: "1px solid rgba(255,255,255,0.12)",
                 boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
               }}>
+
                 {/* Header */}
-                <div style={{ marginBottom: 36, textAlign: "center" }}>
-                  <h1 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 36, letterSpacing: "0.05em", color: C.white, marginBottom: 6 }}>
-                    Fan Survey ⚽
+                <div style={{ marginBottom: 32, textAlign: "center" }}>
+                  <h1 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 32, letterSpacing: "0.05em", color: C.white, marginBottom: 6 }}>
+                    {survey.title}
                   </h1>
-                  <p style={{ color: C.muted, fontSize: 14 }}>
-                    Share your thoughts about your team!
-                  </p>
+                  <div style={{ display: "flex", justifyContent: "center", gap: 8, alignItems: "center" }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.mint }} />
+                    <span style={{ color: C.muted, fontSize: 13 }}>
+                      {answeredCount} of {questions.length} questions answered
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 99, marginTop: 12 }}>
+                    <div style={{
+                      width: questions.length > 0 ? `${(answeredCount / questions.length) * 100}%` : "0%",
+                      height: "100%", background: C.accent, borderRadius: 99,
+                      transition: "width 0.4s ease"
+                    }} />
+                  </div>
                 </div>
 
-                {/* Q1 — Name (Optional) */}
+                {/* Q0 — Name (Optional) */}
                 <div style={{ marginBottom: 28 }}>
                   <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                     <span>What's your name?</span>
@@ -208,8 +269,8 @@ const handleSubmit = async () => {
                   <input
                     type="text"
                     placeholder="e.g. John Smith"
-                    value={form.fan_name}
-                    onChange={e => update('fan_name', e.target.value)}
+                    value={fan_name}
+                    onChange={e => setFanName(e.target.value)}
                     style={{
                       width: "100%", background: "rgba(255,255,255,0.06)",
                       border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12,
@@ -221,7 +282,7 @@ const handleSubmit = async () => {
 
                 <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
 
-                {/* Q2 — Team (Required) */}
+                {/* Team selector */}
                 <div style={{ marginBottom: 28 }}>
                   <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
                     <span>Football team you support</span>
@@ -229,12 +290,12 @@ const handleSubmit = async () => {
                   </label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {teams.map(t => (
-                      <button key={t} className="team-btn" onClick={() => update('team', t)} style={{
-                        background: form.team === t ? "rgba(245,197,24,0.15)" : "rgba(255,255,255,0.05)",
-                        border: form.team === t ? `1px solid ${C.accent}` : "1px solid rgba(255,255,255,0.1)",
+                      <button key={t} className="team-btn" onClick={() => setTeam(t)} style={{
+                        background: team === t ? "rgba(245,197,24,0.15)" : "rgba(255,255,255,0.05)",
+                        border: team === t ? `1px solid ${C.accent}` : "1px solid rgba(255,255,255,0.1)",
                         borderRadius: 20, padding: "7px 15px",
-                        color: form.team === t ? C.accent : C.muted,
-                        fontSize: 13, fontWeight: form.team === t ? 600 : 400,
+                        color: team === t ? C.accent : C.muted,
+                        fontSize: 13, fontWeight: team === t ? 600 : 400,
                       }}>
                         {t}
                       </button>
@@ -244,88 +305,66 @@ const handleSubmit = async () => {
 
                 <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
 
-                {/* Q3 — Rating 1-10 (Required) */}
-                <div style={{ marginBottom: 28 }}>
-                  <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span>How do you feel about your team's current status?</span>
-                    <span style={{ color: C.coral, fontWeight: 600, fontSize: 11 }}>Required</span>
-                  </label>
-                  <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-                    {[1,2,3,4,5,6,7,8,9,10].map(n => (
-                      <button key={n} className="rating-btn" onClick={() => update('rating', n)} style={{
-                        flex: 1, height: 44, borderRadius: 8, border: "none",
-                        background: form.rating >= n ? C.accent : "rgba(255,255,255,0.08)",
-                        color: form.rating >= n ? "#000" : C.muted,
-                        fontSize: 14, fontWeight: 700,
-                      }}>
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>1 = Very bad</span>
-                    {form.rating > 0 && (
-                      <span style={{ fontSize: 13, color: C.accent, fontWeight: 600 }}>
-                        {getRatingLabel(form.rating)}
-                      </span>
+                {/* Dynamic Questions from Database */}
+                {questions.map((q, index) => (
+                  <div key={q.id}>
+                    <div style={{ marginBottom: 24 }}>
+                      {/* Question header */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start", flex: 1 }}>
+                          <div style={{
+                            minWidth: 24, height: 24, borderRadius: "50%",
+                            background: answers[q.id] ? C.accent : "rgba(255,255,255,0.1)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 12, fontWeight: 700,
+                            color: answers[q.id] ? "#000" : C.muted,
+                            transition: "all 0.3s", marginTop: 1,
+                          }}>
+                            {answers[q.id] ? "✓" : index + 1}
+                          </div>
+                          <label style={{ fontSize: 14, color: C.white, fontWeight: 500, lineHeight: 1.5 }}>
+                            {q.question_text}
+                          </label>
+                        </div>
+                        <span style={{ color: C.coral, fontWeight: 600, fontSize: 11, marginLeft: 12, whiteSpace: "nowrap" }}>Required</span>
+                      </div>
+
+                      {/* Answer options */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingLeft: 34 }}>
+                        {q.options.map((option, i) => (
+                          <button key={i} className="option-btn" onClick={() => selectAnswer(q.id, option)} style={{
+                            background: answers[q.id] === option ? "rgba(245,197,24,0.12)" : "rgba(255,255,255,0.03)",
+                            border: answers[q.id] === option ? `1px solid ${C.accent}` : "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: 10, padding: "11px 16px",
+                            color: answers[q.id] === option ? C.accent : C.muted,
+                            fontSize: 14, fontWeight: answers[q.id] === option ? 600 : 400,
+                            textAlign: "left", display: "flex", alignItems: "center", gap: 10,
+                          }}>
+                            <div style={{
+                              width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+                              border: answers[q.id] === option ? `2px solid ${C.accent}` : "2px solid rgba(255,255,255,0.2)",
+                              background: answers[q.id] === option ? C.accent : "transparent",
+                              transition: "all 0.2s",
+                            }} />
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Divider between questions */}
+                    {index < questions.length - 1 && (
+                      <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 24 }} />
                     )}
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>10 = Excellent</span>
                   </div>
-                </div>
+                ))}
 
-                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
-
-                {/* Q4 — Happiness (Required) */}
-                <div style={{ marginBottom: 28 }}>
-                  <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span>Are you happy with your team's performance?</span>
-                    <span style={{ color: C.coral, fontWeight: 600, fontSize: 11 }}>Required</span>
-                  </label>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {happinessOptions.map(opt => (
-                      <button key={opt.value} className="happy-btn" onClick={() => update('satisfaction', opt.value)} style={{
-                        background: form.satisfaction === opt.value ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)",
-                        border: form.satisfaction === opt.value ? `1px solid ${opt.color}` : "1px solid rgba(255,255,255,0.08)",
-                        borderRadius: 12, padding: "13px 16px",
-                        color: form.satisfaction === opt.value ? opt.color : C.muted,
-                        fontSize: 14, fontWeight: form.satisfaction === opt.value ? 600 : 400,
-                        textAlign: "left",
-                      }}>
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
-
-                {/* Q5 — Comments (Optional) */}
-                <div style={{ marginBottom: 32 }}>
-                  <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span>Extra comments</span>
-                    <span style={{ color: "rgba(255,255,255,0.2)", fontWeight: 400, textTransform: "none", fontSize: 11 }}>Optional</span>
-                  </label>
-                  <textarea
-                    placeholder="Anything else you'd like to share about your team?"
-                    value={form.comments}
-                    onChange={e => update('comments', e.target.value)}
-                    rows={4}
-                    style={{
-                      width: "100%", background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12,
-                      padding: "13px 16px", color: C.white, fontSize: 15,
-                      resize: "vertical", fontFamily: "'DM Sans', sans-serif",
-                      transition: "border 0.2s",
-                    }}
-                  />
-                </div>
-
-                {/* Honeypot - invisible to humans, bots fill this in */}
+                {/* Honeypot */}
                 <input
                   type="text"
                   name="honeypot"
-                  value={form.honeypot || ""}
-                  onChange={e => update('honeypot', e.target.value)}
+                  value={honeypot}
+                  onChange={e => setHoneypot(e.target.value)}
                   style={{ display: "none" }}
                   tabIndex="-1"
                   autoComplete="off"
@@ -335,28 +374,29 @@ const handleSubmit = async () => {
                 {error && (
                   <div style={{
                     background: "rgba(255,107,107,0.12)", border: "1px solid rgba(255,107,107,0.3)",
-                    borderRadius: 10, padding: "12px 16px", marginBottom: 16,
+                    borderRadius: 10, padding: "12px 16px", marginBottom: 16, marginTop: 16,
                   }}>
                     <span style={{ fontSize: 13, color: C.coral }}>⚠️ {error}</span>
                   </div>
                 )}
 
                 {/* Submit */}
-                <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit || loading} style={{
-                  width: "100%",
-                  background: canSubmit && !loading ? C.accent : "rgba(255,255,255,0.08)",
-                  border: "none", borderRadius: 14, padding: "16px",
-                  color: canSubmit && !loading ? "#000" : C.muted,
-                  fontSize: 16, fontWeight: 700,
-                  cursor: canSubmit && !loading ? "pointer" : "not-allowed",
-                  transition: "all 0.2s", letterSpacing: "0.03em",
-                }}>
-                  {loading ? "Submitting..." : "Submit Your Vote ⚽"}
-                </button>
-
-                <p style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.2)", marginTop: 14 }}>
-                  * Team, rating and happiness are required to submit
-                </p>
+                <div style={{ marginTop: 28 }}>
+                  <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit || loading} style={{
+                    width: "100%",
+                    background: canSubmit && !loading ? C.accent : "rgba(255,255,255,0.08)",
+                    border: "none", borderRadius: 14, padding: "16px",
+                    color: canSubmit && !loading ? "#000" : C.muted,
+                    fontSize: 16, fontWeight: 700,
+                    cursor: canSubmit && !loading ? "pointer" : "not-allowed",
+                    transition: "all 0.2s", letterSpacing: "0.03em",
+                  }}>
+                    {loading ? "Submitting..." : "Submit Your Vote ⚽"}
+                  </button>
+                  <p style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.2)", marginTop: 12 }}>
+                    * Team and all questions are required to submit
+                  </p>
+                </div>
               </div>
             )}
           </div>

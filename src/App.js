@@ -1,7 +1,5 @@
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
-import SurveyForm from './SurveyForm';
 import { useState, useEffect } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const C = {
   pitch1:   "#2D7A3A",
@@ -9,7 +7,6 @@ const C = {
   line:     "rgba(255,255,255,0.25)",
   white:    "#FFFFFF",
   card:     "rgba(0,0,0,0.55)",
-  cardHover:"rgba(0,0,0,0.65)",
   text:     "#FFFFFF",
   muted:    "rgba(255,255,255,0.55)",
   accent:   "#F5C518",
@@ -20,34 +17,12 @@ const C = {
   peach:    "#FF9A3C",
 };
 
-const mockData = {
-  satisfaction: [
-    { name: "Very Happy",   value: 38, color: C.mint },
-    { name: "Happy",        value: 34, color: C.sky },
-    { name: "Neutral",      value: 16, color: C.accent },
-    { name: "Unhappy",      value: 8,  color: C.peach },
-    { name: "Very Unhappy", value: 4,  color: C.coral },
-  ],
-  monthly: [
-    { month: "Aug", score: 72 }, { month: "Sep", score: 76 },
-    { month: "Oct", score: 73 }, { month: "Nov", score: 79 },
-    { month: "Dec", score: 83 }, { month: "Jan", score: 85 },
-    { month: "Feb", score: 87 },
-  ],
-  categories: [
-    { name: "Attack",    score: 88, color: C.coral },
-    { name: "Defence",   score: 79, color: C.sky },
-    { name: "Midfield",  score: 65, color: C.accent },
-    { name: "Stamina",   score: 92, color: C.mint },
-    { name: "Teamwork",  score: 84, color: C.lavender },
-    { name: "Tactics",   score: 71, color: C.peach },
-  ],
-};
+const COLORS = [C.mint, C.sky, C.accent, C.peach, C.coral, C.lavender];
 
-// ── Football Pitch SVG Background ──────────────────────────────
 function PitchBackground() {
   return (
-    <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0 }} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+    <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
+      viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
       {[...Array(12)].map((_, i) => (
         <rect key={i} x={i * 100} y={0} width={100} height={800}
           fill={i % 2 === 0 ? C.pitch1 : C.pitch2} />
@@ -65,9 +40,9 @@ function PitchBackground() {
       <rect x={1085} y={330} width={55} height={140} fill="none" stroke={C.line} strokeWidth={2} />
       <circle cx={1030} cy={400} r={4} fill="rgba(255,255,255,0.4)" />
       <path d="M 975 340 A 90 90 0 0 0 975 460" fill="none" stroke={C.line} strokeWidth={2} />
-      <path d="M 60 68 A 22 22 0 0 1 82 40"   fill="none" stroke={C.line} strokeWidth={2} />
+      <path d="M 60 68 A 22 22 0 0 1 82 40" fill="none" stroke={C.line} strokeWidth={2} />
       <path d="M 1118 40 A 22 22 0 0 1 1140 68" fill="none" stroke={C.line} strokeWidth={2} />
-      <path d="M 60 732 A 22 22 0 0 0 82 760"  fill="none" stroke={C.line} strokeWidth={2} />
+      <path d="M 60 732 A 22 22 0 0 0 82 760" fill="none" stroke={C.line} strokeWidth={2} />
       <path d="M 1118 760 A 22 22 0 0 0 1140 732" fill="none" stroke={C.line} strokeWidth={2} />
       <rect x={28} y={352} width={32} height={96} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth={2.5} />
       <rect x={1140} y={352} width={32} height={96} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth={2.5} />
@@ -80,7 +55,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) return (
     <div style={{ background: "rgba(0,0,0,0.85)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>
       <div style={{ color: C.muted, marginBottom: 2 }}>{label}</div>
-      <div style={{ fontWeight: 700, color: C.accent }}>{payload[0].value}{typeof payload[0].value === "number" && payload[0].value < 200 ? "%" : ""}</div>
+      <div style={{ fontWeight: 700, color: C.accent }}>{payload[0].value}%</div>
     </div>
   );
   return null;
@@ -96,9 +71,9 @@ function Card({ children, title, style = {} }) {
       ...style
     }}>
       {title && (
-        <div style={{ fontFamily: "Bebas Neue, Impact, sans-serif", fontSize: 20, letterSpacing: "0.05em", color: C.white, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 4, height: 18, background: C.accent, borderRadius: 2 }} />
-          {title}
+        <div style={{ fontFamily: "Bebas Neue, Impact, sans-serif", fontSize: 18, letterSpacing: "0.05em", color: C.white, marginBottom: 18, display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 4, height: 18, background: C.accent, borderRadius: 2, flexShrink: 0 }} />
+          <span>{title}</span>
         </div>
       )}
       {children}
@@ -106,31 +81,113 @@ function Card({ children, title, style = {} }) {
   );
 }
 
-const navItems = ["Overview", "Satisfaction", "Trends", "Categories"];
+// Individual question chart card
+function QuestionCard({ question, index }) {
+  const chartData = question.results.map((r, i) => ({
+    name: r.option,
+    value: r.percentage,
+    count: r.count,
+    color: COLORS[i % COLORS.length],
+  }));
+
+  const topAnswer = [...question.results].sort((a, b) => b.count - a.count)[0];
+
+  return (
+    <Card title={`Q${index + 1}. ${question.question_text}`}>
+      {/* Top answer badge */}
+      {topAnswer && topAnswer.count > 0 && (
+        <div style={{
+          background: "rgba(245,197,24,0.1)", border: "1px solid rgba(245,197,24,0.25)",
+          borderRadius: 10, padding: "8px 14px", marginBottom: 18,
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
+          <span style={{ fontSize: 13, color: C.muted }}>Top answer:</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>{topAnswer.option}</span>
+          <span style={{ fontSize: 12, color: C.muted, marginLeft: "auto" }}>{topAnswer.count} votes</span>
+        </div>
+      )}
+
+      {question.total_answers === 0 ? (
+        <div style={{ textAlign: "center", color: C.muted, fontSize: 14, padding: "20px 0" }}>
+          No responses yet
+        </div>
+      ) : (
+        <>
+          {/* Bar chart */}
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={chartData} barSize={28} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={{ fill: C.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {chartData.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+
+          {/* Percentage breakdown */}
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+            {question.results.map((r, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: C.muted, flex: 1 }}>{r.option}</span>
+                <div style={{ width: 80, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 99 }}>
+                  <div style={{ width: `${r.percentage}%`, height: "100%", background: COLORS[i % COLORS.length], borderRadius: 99, transition: "width 1s ease" }} />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: COLORS[i % COLORS.length], minWidth: 36, textAlign: "right" }}>
+                  {r.percentage}%
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 12, fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "right" }}>
+            {question.total_answers} total responses
+          </div>
+        </>
+      )}
+    </Card>
+  );
+}
 
 export default function Dashboard() {
-  const [active, setActive] = useState("Overview");
-  const [apiData, setApiData] = useState(null);
+  const [active, setActive]       = useState("Overview");
   const [kpiVisible, setKpiVisible] = useState(false);
+  const [results, setResults]     = useState(null);
+  const [loading, setLoading]     = useState(true);
 
+  // Fetch live results from /api/results
   useEffect(() => {
-    fetch('/api/dashboard')
+    fetch('/api/results')
       .then(res => res.json())
-      .then(data => setApiData(data))
-      .catch(err => console.error('API error:', err));
+      .then(data => {
+        setResults(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Results API error:', err);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
 
-  if (window.location.pathname === '/survey') {
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
-      <SurveyForm />
-    </GoogleReCaptchaProvider>
-  );
-}
+  // Survey title shown in nav
+  const surveyTitle = results?.survey
+    ? `${results.survey.month} ${results.survey.year}`
+    : "Dashboard";
+
+  const navItems = ["Overview", ...( results?.questions?.map((q, i) => `Q${i + 1}`) || [] )];
+
+  // Build pie data for overview from Q3 (happiness question - index 2)
+  const sentimentQuestion = results?.questions?.[2];
+  const pieData = sentimentQuestion?.results?.map((r, i) => ({
+    name: r.option,
+    value: r.percentage,
+    color: COLORS[i % COLORS.length],
+  })) || [];
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>
@@ -139,8 +196,6 @@ export default function Dashboard() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .nav-btn { transition: all 0.2s; cursor: pointer; border: none; background: none; }
         .nav-btn:hover { color: ${C.accent} !important; }
-        .cat-row { transition: transform 0.15s; }
-        .cat-row:hover { transform: translateX(4px); }
       `}</style>
 
       <PitchBackground />
@@ -162,10 +217,10 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <div style={{ display: "flex", gap: 4 }}>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
             {navItems.map(item => (
               <button key={item} className="nav-btn" onClick={() => setActive(item)} style={{
-                padding: "8px 20px", borderRadius: 20, fontSize: 14, fontWeight: 500,
+                padding: "8px 16px", borderRadius: 20, fontSize: 13, fontWeight: 500,
                 color: active === item ? C.accent : C.muted,
                 background: active === item ? "rgba(245,197,24,0.12)" : "none",
                 border: active === item ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
@@ -173,186 +228,111 @@ export default function Dashboard() {
                 {item}
               </button>
             ))}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.mint, boxShadow: `0 0 8px ${C.mint}` }} />
-            <span style={{ fontSize: 13, color: C.muted }}>Live · Feb 2026</span>
+            <a href="/survey" style={{
+              marginLeft: 8, background: C.accent, borderRadius: 20,
+              padding: "8px 20px", fontSize: 14, fontWeight: 700,
+              color: "#000", textDecoration: "none",
+              display: "inline-flex", alignItems: "center", gap: 6,
+            }}>
+              ⚽ Take Survey
+            </a>
           </div>
         </div>
 
-        {/* Page content */}
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 24px" }}>
+        {/* Main Content */}
+        <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
-          <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 52, letterSpacing: "0.05em", color: C.white, lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
-              {active === "Overview"     && "FOOTBALL STATUS OVERVIEW"}
-              {active === "Satisfaction" && "FAN SATISFACTION"}
-              {active === "Trends"       && "SEASON TRENDS"}
-              {active === "Categories"   && "PERFORMANCE RATINGS"}
-            </h1>
-            
+          {/* Page title - centered */}
+          <div style={{ textAlign: "center" }}>
+            <h2 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: "0.08em", color: C.white }}>
+              {active === "Overview" && "FOOTBALL STATUS OVERVIEW"}
+              {active !== "Overview" && `QUESTION ${active.replace("Q", "")} RESULTS`}
+            </h2>
+            <p style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>
+              {results?.survey?.title || "Loading..."} · {results?.totalResponses || 0} total responses
+            </p>
           </div>
 
-          {/* OVERVIEW */}
-          {active === "Overview" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Loading state */}
+          {loading && (
+            <div style={{ textAlign: "center", color: C.muted, padding: "60px 0", fontSize: 16 }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>⚽</div>
+              Loading results...
+            </div>
+          )}
 
-              {/* KPI Card - now reads from API */}
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <div style={{
-                  background: C.card, backdropFilter: "blur(12px)",
-                  borderRadius: 20, padding: "32px 24px",
-                  border: `1px solid rgba(245,197,24,0.3)`,
-                  boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,197,24,0.1)`,
-                  opacity: kpiVisible ? 1 : 0,
-                  transform: kpiVisible ? "translateY(0)" : "translateY(20px)",
-                  transition: "opacity 0.6s ease, transform 0.6s ease",
-                  width: "100%", maxWidth: 480,
-                  display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", textAlign: "center",
-                }}>
-                  <div style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                    Total Responses
-                  </div>
-                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
-                    {apiData ? apiData.totalResponses.toLocaleString() : "Loading..."}
-                  </div>
+          {/* OVERVIEW TAB */}
+          {!loading && active === "Overview" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
+
+              {/* Total Responses KPI */}
+              <div style={{
+                background: C.card, backdropFilter: "blur(12px)",
+                borderRadius: 20, padding: "32px 24px",
+                border: `1px solid rgba(245,197,24,0.3)`,
+                boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+                opacity: kpiVisible ? 1 : 0,
+                transform: kpiVisible ? "translateY(0)" : "translateY(20px)",
+                transition: "opacity 0.6s ease, transform 0.6s ease",
+                width: "100%", maxWidth: 480,
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center", textAlign: "center",
+              }}>
+                <div style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                  Total Responses
+                </div>
+                <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
+                  {results ? results.totalResponses.toLocaleString() : "..."}
+                </div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>
+                  {surveyTitle} Survey
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <Card title="Fan Sentiment" style={{ width: "100%", maxWidth: 480 }}>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie data={mockData.satisfaction} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
-                        {mockData.satisfaction.map((e, i) => <Cell key={i} fill={e.color} />)}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", justifyContent: "center", marginTop: 12 }}>
-                    {mockData.satisfaction.map((s, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color }} />
-                        <span style={{ fontSize: 12, color: C.muted }}>{s.name} <strong style={{ color: C.white }}>{s.value}%</strong></span>
+              {/* Sentiment pie — uses Q3 happiness question */}
+              {sentimentQuestion && (
+                <Card
+                  title={sentimentQuestion.question_text}
+                  style={{ width: "100%", maxWidth: 480 }}
+                >
+                  {pieData.every(d => d.value === 0) ? (
+                    <div style={{ textAlign: "center", color: C.muted, fontSize: 14, padding: "20px 0" }}>No responses yet</div>
+                  ) : (
+                    <>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
+                            {pieData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", justifyContent: "center", marginTop: 12 }}>
+                        {pieData.map((s, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color }} />
+                            <span style={{ fontSize: 12, color: C.muted }}>{s.name} <strong style={{ color: C.white }}>{s.value}%</strong></span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  )}
                 </Card>
+              )}
+            </div>
+          )}
+
+          {/* INDIVIDUAL QUESTION TABS */}
+          {!loading && active !== "Overview" && results?.questions && (() => {
+            const qIndex = parseInt(active.replace("Q", "")) - 1;
+            const question = results.questions[qIndex];
+            if (!question) return null;
+            return (
+              <div style={{ maxWidth: 700, margin: "0 auto", width: "100%" }}>
+                <QuestionCard question={question} index={qIndex} />
               </div>
-            </div>
-          )}
+            );
+          })()}
 
-          {/* SATISFACTION */}
-          {active === "Satisfaction" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-              <Card title="Sentiment Distribution">
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie data={mockData.satisfaction} dataKey="value" cx="50%" cy="50%" outerRadius={110} paddingAngle={4}
-                      label={({ name, value }) => `${value}%`} labelLine={{ stroke: "rgba(255,255,255,0.3)" }}>
-                      {mockData.satisfaction.map((e, i) => <Cell key={i} fill={e.color} />)}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
-
-              <Card title="Score Breakdown">
-                {mockData.satisfaction.map((s, i) => (
-                  <div key={i} style={{ marginBottom: 18 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <span style={{ fontSize: 14, color: C.white, fontWeight: 500 }}>{s.name}</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}%</span>
-                    </div>
-                    <div style={{ height: 8, background: "rgba(255,255,255,0.1)", borderRadius: 99 }}>
-                      <div style={{ width: `${s.value * 2}%`, height: "100%", background: s.color, borderRadius: 99, transition: "width 1s ease" }} />
-                    </div>
-                  </div>
-                ))}
-              </Card>
-            </div>
-          )}
-
-          {/* TRENDS */}
-          {active === "Trends" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              <Card title="Monthly Satisfaction Score">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={mockData.monthly}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fill: C.muted, fontSize: 13 }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[60, 100]} tick={{ fill: C.muted, fontSize: 13 }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Line type="monotone" dataKey="score" stroke={C.accent} strokeWidth={4}
-                      dot={{ fill: C.accent, r: 6, strokeWidth: 0 }}
-                      activeDot={{ r: 9, fill: C.accent, stroke: "#000", strokeWidth: 2 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Card>
-
-              <div style={{ display: "flex", gap: 16 }}>
-                {[
-                  { label: "Best Month",  value: "Feb · 87%", color: C.mint },
-                  { label: "Worst Month", value: "Aug · 72%", color: C.coral },
-                  { label: "Total Growth",value: "+15 pts",   color: C.sky },
-                  { label: "Avg Score",   value: "79.3%",     color: C.lavender },
-                ].map((s, i) => (
-                  <div key={i} style={{
-                    flex: 1, background: C.card, backdropFilter: "blur(12px)",
-                    borderRadius: 16, padding: "18px 20px",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderLeft: `4px solid ${s.color}`,
-                  }}>
-                    <div style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 6 }}>{s.label}</div>
-                    <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: "0.05em", color: C.white }}>{s.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* CATEGORIES */}
-          {active === "Categories" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
-              <Card title="Performance by Category">
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={mockData.categories} barSize={32}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[0, 100]} tick={{ fill: C.muted, fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="score" radius={[8, 8, 0, 0]}>
-                      {mockData.categories.map((e, i) => <Cell key={i} fill={e.color} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
-
-              <Card title="Rankings">
-                {[...mockData.categories].sort((a, b) => b.score - a.score).map((c, i) => (
-                  <div key={i} className="cat-row" style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "11px 0", borderBottom: i < mockData.categories.length - 1 ? "1px solid rgba(255,255,255,0.07)" : "none"
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 20, color: "rgba(255,255,255,0.15)", minWidth: 28 }}>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: c.color }} />
-                      <span style={{ fontSize: 14, color: C.white, fontWeight: 500 }}>{c.name}</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 60, height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 99 }}>
-                        <div style={{ width: `${c.score}%`, height: "100%", background: c.color, borderRadius: 99 }} />
-                      </div>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: c.color, minWidth: 36, textAlign: "right" }}>{c.score}%</span>
-                    </div>
-                  </div>
-                ))}
-              </Card>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -84,7 +84,7 @@ function Card({ children, title, style = {} }) {
 }
 
 // Individual question chart card
-function QuestionCard({ question, index }) {
+function QuestionCard({ question, index, isMobile }) {
   const chartData = question.results.map((r, i) => ({
     name: r.option,
     value: r.percentage,
@@ -155,6 +155,12 @@ function QuestionCard({ question, index }) {
 export default function Dashboard() {
   const [active, setActive]       = useState("Overview");
   const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -377,7 +383,7 @@ if (window.location.pathname === '/survey') {
             if (!question) return null;
             return (
               <div style={{ maxWidth: 700, margin: "0 auto", width: "100%" }}>
-                <QuestionCard question={question} index={qIndex} />
+                <QuestionCard question={question} index={qIndex} isMobile={isMobile} />
               </div>
             );
           })()}

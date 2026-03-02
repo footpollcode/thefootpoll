@@ -161,15 +161,13 @@ export default function Dashboard() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   const [kpiVisible, setKpiVisible] = useState(false);
   const [results, setResults]     = useState(null);
   const [loading, setLoading]     = useState(true);
+
+  // Countdown timer state
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [surveyOpen, setSurveyOpen] = useState(true);
 
   // Fetch live results from /api/results
   useEffect(() => {
@@ -189,7 +187,42 @@ export default function Dashboard() {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
 
-  // Survey routing — must be AFTER all hooks
+  // Countdown timer — updates every second
+  useEffect(() => {
+    if (!results?.survey?.closes_at) return;
+
+    const tick = () => {
+      const now = new Date();
+      const closes = new Date(results.survey.closes_at);
+      const opens = new Date(results.survey.opens_at);
+      const diff = closes - now;
+
+      if (now < opens) {
+        setSurveyOpen(false);
+        setTimeLeft(null);
+        return;
+      }
+
+      if (diff <= 0) {
+        setSurveyOpen(false);
+        setTimeLeft(null);
+        return;
+      }
+
+      setSurveyOpen(true);
+      const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [results]);
+
+
 if (window.location.pathname === '/survey') {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
@@ -252,14 +285,46 @@ if (window.location.pathname === '/survey') {
                 {item}
               </button>
             ))}
-            <a href="/survey" style={{
-              marginLeft: 8, background: C.accent, borderRadius: 20,
-              padding: "8px 20px", fontSize: 14, fontWeight: 700,
-              color: "#000", textDecoration: "none",
-              display: "inline-flex", alignItems: "center", gap: 6,
-            }}>
-              {isMobile ? "⚽" : "⚽ Take Survey"}
-            </a>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
+              {/* Countdown timer */}
+              {timeLeft && !isMobile && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 20, padding: "7px 14px",
+                }}>
+                  <span style={{ fontSize: 13, color: C.muted }}>🕐</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.white, fontFamily: "Bebas Neue, sans-serif", letterSpacing: "0.05em" }}>
+                    {timeLeft.days}d {String(timeLeft.hours).padStart(2,"0")}h {String(timeLeft.minutes).padStart(2,"0")}m {String(timeLeft.seconds).padStart(2,"0")}s
+                  </span>
+                  <span style={{ fontSize: 11, color: C.muted }}>left</span>
+                </div>
+              )}
+
+              {/* Take Survey button */}
+              {surveyOpen ? (
+                <a href="/survey" style={{
+                  background: C.accent, borderRadius: 20,
+                  padding: "8px 20px", fontSize: 14, fontWeight: 700,
+                  color: "#000", textDecoration: "none",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                  {isMobile ? "⚽" : "⚽ Take Survey"}
+                </a>
+              ) : (
+                <div style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 20, padding: "8px 20px",
+                  fontSize: 13, fontWeight: 600,
+                  color: C.muted, cursor: "not-allowed",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                  {isMobile ? "🔒" : "🔒 Survey Closed"}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

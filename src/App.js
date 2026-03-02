@@ -1,3 +1,5 @@
+import SurveyForm from './SurveyForm';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -173,6 +175,15 @@ export default function Dashboard() {
   useEffect(() => {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
+
+  // Survey routing — must be AFTER all hooks
+if (window.location.pathname === '/survey') {
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
+      <SurveyForm />
+    </GoogleReCaptchaProvider>
+  );
+}
 
   // Survey title shown in nav
   const surveyTitle = results?.survey

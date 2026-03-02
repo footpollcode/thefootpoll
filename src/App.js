@@ -168,6 +168,7 @@ export default function Dashboard() {
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState(null);
   const [surveyOpen, setSurveyOpen] = useState(true);
+  const [menuOpen, setMenuOpen]     = useState(false);
 
   // Fetch live results from /api/results
   useEffect(() => {
@@ -222,8 +223,7 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [results]);
 
-
-if (window.location.pathname === '/survey') {
+  if (window.location.pathname === '/survey') {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
       <SurveyForm />
@@ -263,69 +263,132 @@ if (window.location.pathname === '/survey') {
         <div style={{
           background: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)",
           borderBottom: "1px solid rgba(255,255,255,0.1)",
-          padding: isMobile ? "0 16px" : "0 40px", display: "flex", alignItems: "center",
-          justifyContent: "space-between", height: 64,
           position: "sticky", top: 0, zIndex: 100,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 28 }}>⚽</span>
-            <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 24, letterSpacing: "0.1em", color: C.white }}>
-              THE<span style={{ color: C.accent }}>FOOTPOLL</span>
-            </span>
-          </div>
+          {isMobile ? (
+            /* ── MOBILE NAVBAR ── */
+            <div>
+              <div style={{ padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
 
-          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-            {navItems.map(item => (
-              <button key={item} className="nav-btn" onClick={() => setActive(item)} style={{
-                padding: "8px 16px", borderRadius: 20, fontSize: 13, fontWeight: 500,
-                color: active === item ? C.accent : C.muted,
-                background: active === item ? "rgba(245,197,24,0.12)" : "none",
-                border: active === item ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
-              }}>
-                {item}
-              </button>
-            ))}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
-              {/* Countdown timer */}
-              {timeLeft && !isMobile && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 20, padding: "7px 14px",
+                {/* Left — Hamburger menu */}
+                <button onClick={() => setMenuOpen(o => !o)} style={{
+                  background: "none", border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 8, padding: "8px 10px", cursor: "pointer",
+                  display: "flex", flexDirection: "column", gap: 4, alignItems: "center",
                 }}>
-                  <span style={{ fontSize: 13, color: C.muted }}>🕐</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: C.white, fontFamily: "Bebas Neue, sans-serif", letterSpacing: "0.05em" }}>
-                    {timeLeft.days}d {String(timeLeft.hours).padStart(2,"0")}h {String(timeLeft.minutes).padStart(2,"0")}m {String(timeLeft.seconds).padStart(2,"0")}s
+                  <div style={{ width: 18, height: 2, background: menuOpen ? C.accent : C.white, borderRadius: 2, transition: "all 0.2s" }} />
+                  <div style={{ width: 18, height: 2, background: menuOpen ? C.accent : C.white, borderRadius: 2, transition: "all 0.2s" }} />
+                  <div style={{ width: 18, height: 2, background: menuOpen ? C.accent : C.white, borderRadius: 2, transition: "all 0.2s" }} />
+                </button>
+
+                {/* Center — Logo */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
+                  <span style={{ fontSize: 22 }}>⚽</span>
+                  <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 20, letterSpacing: "0.1em", color: C.white }}>
+                    THE<span style={{ color: C.accent }}>FOOTPOLL</span>
                   </span>
-                  <span style={{ fontSize: 11, color: C.muted }}>left</span>
                 </div>
-              )}
 
-              {/* Take Survey button */}
-              {surveyOpen ? (
-                <a href="/survey" style={{
-                  background: C.accent, borderRadius: 20,
-                  padding: "8px 20px", fontSize: 14, fontWeight: 700,
-                  color: "#000", textDecoration: "none",
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                }}>
-                  {isMobile ? "⚽" : "⚽ Take Survey"}
-                </a>
-              ) : (
+                {/* Right — Survey button */}
+                {surveyOpen ? (
+                  <a href="/survey" style={{
+                    background: C.accent, borderRadius: 20,
+                    padding: "8px 14px", fontSize: 13, fontWeight: 700,
+                    color: "#000", textDecoration: "none",
+                    display: "inline-flex", alignItems: "center",
+                  }}>⚽</a>
+                ) : (
+                  <div style={{
+                    background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 20, padding: "8px 14px", fontSize: 13,
+                    color: C.muted, cursor: "not-allowed",
+                  }}>🔒</div>
+                )}
+              </div>
+
+              {/* Dropdown menu */}
+              {menuOpen && (
                 <div style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 20, padding: "8px 20px",
-                  fontSize: 13, fontWeight: 600,
-                  color: C.muted, cursor: "not-allowed",
-                  display: "inline-flex", alignItems: "center", gap: 6,
+                  background: "rgba(0,0,0,0.95)", borderTop: "1px solid rgba(255,255,255,0.08)",
+                  padding: "12px 16px", display: "flex", flexDirection: "column", gap: 4,
                 }}>
-                  {isMobile ? "🔒" : "🔒 Survey Closed"}
+                  <button onClick={() => { setActive("Overview"); setMenuOpen(false); }} style={{
+                    background: active === "Overview" ? "rgba(245,197,24,0.12)" : "none",
+                    border: active === "Overview" ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
+                    borderRadius: 10, padding: "12px 16px", color: active === "Overview" ? C.accent : C.white,
+                    fontSize: 14, fontWeight: 500, textAlign: "left", cursor: "pointer",
+                  }}>
+                    🏠 Overview
+                  </button>
+                    {results?.questions?.map((q, i) => (
+                      <button key={q.id} onClick={() => { setActive(`Q${i + 1}`); setMenuOpen(false); }} style={{
+                        background: active === `Q${i + 1}` ? "rgba(245,197,24,0.12)" : "none",
+                        border: active === `Q${i + 1}` ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
+                        borderRadius: 10, padding: "12px 16px",
+                        color: active === `Q${i + 1}` ? C.accent : C.muted,
+                        fontSize: 13, fontWeight: 500, textAlign: "left", cursor: "pointer",
+                      }}>
+                        Q{i + 1}
+                      </button>
+                    ))}
                 </div>
               )}
             </div>
-          </div>
+          ) : (
+            /* ── DESKTOP NAVBAR ── */
+            <div style={{ padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 28 }}>⚽</span>
+                <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 24, letterSpacing: "0.1em", color: C.white }}>
+                  THE<span style={{ color: C.accent }}>FOOTPOLL</span>
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                {navItems.map(item => (
+                  <button key={item} className="nav-btn" onClick={() => setActive(item)} style={{
+                    padding: "8px 16px", borderRadius: 20, fontSize: 13, fontWeight: 500,
+                    color: active === item ? C.accent : C.muted,
+                    background: active === item ? "rgba(245,197,24,0.12)" : "none",
+                    border: active === item ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
+                  }}>
+                    {item}
+                  </button>
+                ))}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
+                  {timeLeft && (
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: 20, padding: "7px 14px",
+                    }}>
+                      <span style={{ fontSize: 13, color: C.muted }}>🕐</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.white, fontFamily: "Bebas Neue, sans-serif", letterSpacing: "0.05em" }}>
+                        {timeLeft.days}d {String(timeLeft.hours).padStart(2,"0")}h {String(timeLeft.minutes).padStart(2,"0")}m {String(timeLeft.seconds).padStart(2,"0")}s
+                      </span>
+                      <span style={{ fontSize: 11, color: C.muted }}>left</span>
+                    </div>
+                  )}
+                  {surveyOpen ? (
+                    <a href="/survey" style={{
+                      background: C.accent, borderRadius: 20,
+                      padding: "8px 20px", fontSize: 14, fontWeight: 700,
+                      color: "#000", textDecoration: "none",
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                    }}>⚽ Take Survey</a>
+                  ) : (
+                    <div style={{
+                      background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: 20, padding: "8px 20px", fontSize: 13, fontWeight: 600,
+                      color: C.muted, cursor: "not-allowed",
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                    }}>🔒 Survey Closed</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Main Content */}

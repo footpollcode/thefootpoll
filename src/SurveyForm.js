@@ -46,6 +46,13 @@ function PitchBackground() {
 
 export default function SurveyForm() {
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Survey data from API
   const [survey, setSurvey]       = useState(null);
@@ -158,7 +165,7 @@ export default function SurveyForm() {
         <div style={{
           background: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)",
           borderBottom: "1px solid rgba(255,255,255,0.1)",
-          padding: "0 40px", display: "flex", alignItems: "center",
+          padding: isMobile ? "0 16px" : "0 40px", display: "flex", alignItems: "center",
           justifyContent: "space-between", height: 64,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -167,13 +174,13 @@ export default function SurveyForm() {
               THE<span style={{ color: C.accent }}>FOOTPOLL</span>
             </span>
           </div>
-          <span style={{ fontSize: 13, color: C.muted }}>
+          <span style={{ fontSize: isMobile ? 11 : 13, color: C.muted }}>
             {survey ? `${survey.month} ${survey.year} Survey` : "Fan Survey"}
           </span>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "20px 12px" : "40px 24px" }}>
           <div style={{ width: "100%", maxWidth: 600 }}>
 
             {/* LOADING STATE */}
@@ -234,14 +241,14 @@ export default function SurveyForm() {
             {!loadingData && !loadError && !submitted && survey && (
               <div style={{
                 background: C.card, backdropFilter: "blur(12px)",
-                borderRadius: 24, padding: "40px",
+                borderRadius: isMobile ? 16 : 24, padding: isMobile ? "24px 16px" : "40px",
                 border: "1px solid rgba(255,255,255,0.12)",
                 boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
               }}>
 
                 {/* Header */}
                 <div style={{ marginBottom: 32, textAlign: "center" }}>
-                  <h1 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 32, letterSpacing: "0.05em", color: C.white, marginBottom: 6 }}>
+                  <h1 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 24 : 32, letterSpacing: "0.05em", color: C.white, marginBottom: 6 }}>
                     {survey.title}
                   </h1>
                   <div style={{ display: "flex", justifyContent: "center", gap: 8, alignItems: "center" }}>
@@ -293,9 +300,9 @@ export default function SurveyForm() {
                       <button key={t} className="team-btn" onClick={() => setTeam(t)} style={{
                         background: team === t ? "rgba(245,197,24,0.15)" : "rgba(255,255,255,0.05)",
                         border: team === t ? `1px solid ${C.accent}` : "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 20, padding: "7px 15px",
+                        borderRadius: 20, padding: isMobile ? "6px 10px" : "7px 15px",
                         color: team === t ? C.accent : C.muted,
-                        fontSize: 13, fontWeight: team === t ? 600 : 400,
+                        fontSize: isMobile ? 12 : 13, fontWeight: team === t ? 600 : 400,
                       }}>
                         {t}
                       </button>
@@ -330,12 +337,12 @@ export default function SurveyForm() {
                       </div>
 
                       {/* Answer options */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingLeft: 34 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingLeft: isMobile ? 0 : 34 }}>
                         {q.options.map((option, i) => (
                           <button key={i} className="option-btn" onClick={() => selectAnswer(q.id, option)} style={{
                             background: answers[q.id] === option ? "rgba(245,197,24,0.12)" : "rgba(255,255,255,0.03)",
                             border: answers[q.id] === option ? `1px solid ${C.accent}` : "1px solid rgba(255,255,255,0.08)",
-                            borderRadius: 10, padding: "11px 16px",
+                            borderRadius: 10, padding: isMobile ? "14px 12px" : "11px 16px",
                             color: answers[q.id] === option ? C.accent : C.muted,
                             fontSize: 14, fontWeight: answers[q.id] === option ? 600 : 400,
                             textAlign: "left", display: "flex", alignItems: "center", gap: 10,
@@ -387,7 +394,7 @@ export default function SurveyForm() {
                     background: canSubmit && !loading ? C.accent : "rgba(255,255,255,0.08)",
                     border: "none", borderRadius: 14, padding: "16px",
                     color: canSubmit && !loading ? "#000" : C.muted,
-                    fontSize: 16, fontWeight: 700,
+                    fontSize: isMobile ? 15 : 16, fontWeight: 700,
                     cursor: canSubmit && !loading ? "pointer" : "not-allowed",
                     transition: "all 0.2s", letterSpacing: "0.03em",
                   }}>

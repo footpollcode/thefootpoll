@@ -116,7 +116,7 @@ function QuestionCard({ question, index }) {
       ) : (
         <>
           {/* Bar chart */}
-          <ResponsiveContainer width="100%" height={180}>
+          <ResponsiveContainer width="100%" height={isMobile ? 140 : 180}>
             <BarChart data={chartData} barSize={28} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} tick={{ fill: C.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -154,6 +154,13 @@ function QuestionCard({ question, index }) {
 
 export default function Dashboard() {
   const [active, setActive]       = useState("Overview");
+  const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [kpiVisible, setKpiVisible] = useState(false);
   const [results, setResults]     = useState(null);
   const [loading, setLoading]     = useState(true);
@@ -190,7 +197,7 @@ if (window.location.pathname === '/survey') {
     ? `${results.survey.month} ${results.survey.year}`
     : "Dashboard";
 
-  const navItems = ["Overview", ...( results?.questions?.map((q, i) => `Q${i + 1}`) || [] )];
+  const navItems = isMobile ? ["Overview"] : ["Overview", ...( results?.questions?.map((q, i) => `Q${i + 1}`) || [] )];
 
   // Build pie data for overview from Q3 (happiness question - index 2)
   const sentimentQuestion = results?.questions?.[2];
@@ -217,7 +224,7 @@ if (window.location.pathname === '/survey') {
         <div style={{
           background: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)",
           borderBottom: "1px solid rgba(255,255,255,0.1)",
-          padding: "0 40px", display: "flex", alignItems: "center",
+          padding: isMobile ? "0 16px" : "0 40px", display: "flex", alignItems: "center",
           justifyContent: "space-between", height: 64,
           position: "sticky", top: 0, zIndex: 100,
         }}>
@@ -245,17 +252,17 @@ if (window.location.pathname === '/survey') {
               color: "#000", textDecoration: "none",
               display: "inline-flex", alignItems: "center", gap: 6,
             }}>
-              ⚽ Take Survey
+              {isMobile ? "⚽" : "⚽ Take Survey"}
             </a>
           </div>
         </div>
 
         {/* Main Content */}
-        <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ padding: isMobile ? "20px 16px" : "32px 40px", maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
           {/* Page title - centered */}
           <div style={{ textAlign: "center" }}>
-            <h2 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: "0.08em", color: C.white }}>
+            <h2 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 20 : 28, letterSpacing: "0.08em", color: C.white }}>
               {active === "Overview" && "FOOTBALL STATUS OVERVIEW"}
               {active !== "Overview" && `QUESTION ${active.replace("Q", "")} RESULTS`}
             </h2>
@@ -292,7 +299,7 @@ if (window.location.pathname === '/survey') {
                 <div style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
                   Total Responses
                 </div>
-                <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
+                <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 56 : 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
                   {results ? results.totalResponses.toLocaleString() : "..."}
                 </div>
                 <div style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>
@@ -330,6 +337,37 @@ if (window.location.pathname === '/survey') {
                 </Card>
               )}
             </div>
+          )}
+
+          {/* Mobile Q selector — shown only on mobile */}
+          {!loading && isMobile && active === "Overview" && results?.questions && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <p style={{ color: C.muted, fontSize: 13, textAlign: "center" }}>Tap a question to see results:</p>
+              {results.questions.map((q, i) => (
+                <button key={q.id} onClick={() => setActive(`Q${i + 1}`)} style={{
+                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 12, padding: "14px 16px", color: C.white,
+                  fontSize: 13, fontWeight: 500, textAlign: "left", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 10,
+                }}>
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: C.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#000", flexShrink: 0 }}>
+                    {i + 1}
+                  </div>
+                  {q.question_text}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Back button on mobile question view */}
+          {isMobile && active !== "Overview" && (
+            <button onClick={() => setActive("Overview")} style={{
+              background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 10, padding: "10px 16px", color: C.white,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", alignSelf: "flex-start",
+            }}>
+              ← Back
+            </button>
           )}
 
           {/* INDIVIDUAL QUESTION TABS */}

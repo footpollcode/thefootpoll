@@ -16,13 +16,6 @@ const C = {
   peach:    "#FF9A3C",
 };
 
-const teams = [
-  "Arsenal", "Aston Villa", "Barcelona", "Bayern Munich",
-  "Chelsea", "Inter Milan", "Juventus", "Liverpool",
-  "Manchester City", "Manchester United", "PSG", "Real Madrid",
-  "Tottenham", "AC Milan", "Atletico Madrid", "Other"
-];
-
 function PitchBackground() {
   return (
     <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0 }}

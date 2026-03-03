@@ -58,10 +58,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Security check failed. Please try again.' });
     }
 
-    // Validate required fields
-    if (!survey_id || !team || !answers || answers.length === 0) {
-      return res.status(400).json({ error: 'Please fill in all required fields.' });
-    }
+if (!survey_id || !answers || answers.length === 0) {
+  return res.status(400).json({ error: 'Please fill in all required fields.' });
+}
 
     // Sanitize
     const sanitize = (str) => str ? str.replace(/<[^>]*>/g, '').trim().slice(0, 500) : '';

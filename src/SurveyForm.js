@@ -94,7 +94,7 @@ export default function SurveyForm() {
 
   // All questions must be answered + team selected
   const answeredCount = Object.keys(answers).length;
-  const canSubmit = team && answeredCount === questions.length && !honeypot;
+  const canSubmit = answeredCount === questions.length && !honeypot;
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -271,7 +271,7 @@ export default function SurveyForm() {
                 <div style={{ marginBottom: 28 }}>
                   <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                     <span>What's your name?</span>
-                    <span style={{ color: "rgba(255,255,255,0.2)", fontWeight: 400, textTransform: "none", fontSize: 11 }}>Optional</span>
+                    <span style={{ color: C.accent, fontWeight: 700, textTransform: "none", fontSize: 11 }}>Optional</span>
                   </label>
                   <input
                     type="text"
@@ -285,29 +285,6 @@ export default function SurveyForm() {
                       transition: "border 0.2s",
                     }}
                   />
-                </div>
-
-                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />
-
-                {/* Team selector */}
-                <div style={{ marginBottom: 28 }}>
-                  <label style={{ fontSize: 12, color: C.muted, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span>Football team you support</span>
-                    <span style={{ color: C.coral, fontWeight: 600, fontSize: 11 }}>Required</span>
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {teams.map(t => (
-                      <button key={t} className="team-btn" onClick={() => setTeam(t)} style={{
-                        background: team === t ? "rgba(245,197,24,0.15)" : "rgba(255,255,255,0.05)",
-                        border: team === t ? `1px solid ${C.accent}` : "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 20, padding: isMobile ? "6px 10px" : "7px 15px",
-                        color: team === t ? C.accent : C.muted,
-                        fontSize: isMobile ? 12 : 13, fontWeight: team === t ? 600 : 400,
-                      }}>
-                        {t}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 28 }} />

@@ -223,6 +223,8 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [results]);
 
+
+
   if (window.location.pathname === '/survey') {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
@@ -412,24 +414,18 @@ export default function Dashboard() {
           {/* Loading state */}
           {loading && (
             <div style={{
-              position: "fixed", inset: 0, zIndex: 50,
               display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center", gap: 20,
+              alignItems: "center", justifyContent: "center",
+              paddingTop: "120px",
             }}>
-              <div style={{ fontSize: 64, animation: "bounce 1s infinite alternate" }}>⚽</div>
-              <div style={{
-                background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 12, padding: "10px 24px",
-              }}>
-                <span style={{ fontSize: 15, color: C.muted, fontWeight: 500 }}>Loading results...</span>
-              </div>
               <style>{`
                 @keyframes bounce {
                   from { transform: translateY(0px); }
-                  to   { transform: translateY(-16px); }
+                  to   { transform: translateY(-12px); }
                 }
               `}</style>
+              <div style={{ fontSize: 36, animation: "bounce 0.9s infinite alternate", marginBottom: 48 }}>⚽</div>
+              <span style={{ fontSize: 14, color: C.muted, fontWeight: 500 }}>Loading results...</span>
             </div>
           )}
 

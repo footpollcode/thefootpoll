@@ -223,7 +223,7 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [results]);
 
-    if (window.location.pathname === '/survey') {
+      if (window.location.pathname === '/survey') {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
       <SurveyForm />
@@ -414,7 +414,7 @@ export default function Dashboard() {
             <div style={{
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              paddingTop: "180px",
+              paddingTop: "150px",
             }}>
               <style>{`
                 @keyframes bounce {

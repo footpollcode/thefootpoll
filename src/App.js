@@ -320,17 +320,21 @@ export default function Dashboard() {
                   }}>
                     🏠 Overview
                   </button>
-                    {results?.questions?.map((q, i) => (
-                      <button key={q.id} onClick={() => { setActive(`Q${i + 1}`); setMenuOpen(false); }} style={{
-                        background: active === `Q${i + 1}` ? "rgba(245,197,24,0.12)" : "none",
-                        border: active === `Q${i + 1}` ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
-                        borderRadius: 10, padding: "12px 16px",
-                        color: active === `Q${i + 1}` ? C.accent : C.muted,
-                        fontSize: 13, fontWeight: 500, textAlign: "left", cursor: "pointer",
-                      }}>
-                        Q{i + 1}
-                      </button>
-                    ))}
+                  {results?.questions?.map((q, i) => (
+                    <button key={q.id} onClick={() => { setActive(`Q${i + 1}`); setMenuOpen(false); }} style={{
+                      background: active === `Q${i + 1}` ? "rgba(245,197,24,0.12)" : "none",
+                      border: active === `Q${i + 1}` ? `1px solid rgba(245,197,24,0.3)` : "1px solid transparent",
+                      borderRadius: 10, padding: "12px 16px",
+                      color: active === `Q${i + 1}` ? C.accent : C.muted,
+                      fontSize: 13, fontWeight: 500, textAlign: "left", cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: 10,
+                    }}>
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: active === `Q${i+1}` ? C.accent : "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: active === `Q${i+1}` ? "#000" : C.muted, flexShrink: 0 }}>
+                        {i + 1}
+                      </div>
+                      {q.question_text}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -407,9 +411,25 @@ export default function Dashboard() {
 
           {/* Loading state */}
           {loading && (
-            <div style={{ textAlign: "center", color: C.muted, padding: "60px 0", fontSize: 16 }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>⚽</div>
-              Loading results...
+            <div style={{
+              position: "fixed", inset: 0, zIndex: 50,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 20,
+            }}>
+              <div style={{ fontSize: 64, animation: "bounce 1s infinite alternate" }}>⚽</div>
+              <div style={{
+                background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 12, padding: "10px 24px",
+              }}>
+                <span style={{ fontSize: 15, color: C.muted, fontWeight: 500 }}>Loading results...</span>
+              </div>
+              <style>{`
+                @keyframes bounce {
+                  from { transform: translateY(0px); }
+                  to   { transform: translateY(-16px); }
+                }
+              `}</style>
             </div>
           )}
 

@@ -225,12 +225,16 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [results]);
 
-        if (window.location.pathname === '/survey') {
+   if (window.location.pathname === '/survey') {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
       <SurveyForm />
     </GoogleReCaptchaProvider>
   );
+}
+
+if (window.location.pathname === '/past-polls') {
+  return <PastPolls />;
 }
 
   // Survey title shown in nav

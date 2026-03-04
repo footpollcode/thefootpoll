@@ -306,7 +306,7 @@ export default function Dashboard() {
                     color: C.muted, fontSize: 13, fontWeight: 500,
                     cursor: "pointer", textAlign: "left", width: "100%",
                   }}>
-                    ℹ️ About
+                    🏟️ About
                   </button>
                 </div>
               )}
@@ -353,7 +353,7 @@ export default function Dashboard() {
                     color: C.white, cursor: "pointer",
                     display: "inline-flex", alignItems: "center", gap: 6,
                   }}>
-                    ℹ️ About
+                    🏟️ About
                   </button>
                   {/* Past Polls button */}
                   <a href="/past-polls" style={{

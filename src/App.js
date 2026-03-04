@@ -1,3 +1,4 @@
+import PastPolls from './PastPolls';
 import SurveyForm from './SurveyForm';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { useState, useEffect } from "react";
@@ -231,6 +232,10 @@ export default function Dashboard() {
   );
 }
 
+if (window.location.pathname === '/past-polls') {
+  return <PastPolls />;
+}
+
   // Survey title shown in nav
   const surveyTitle = results?.survey
     ? `${results.survey.month} ${results.survey.year}`
@@ -335,6 +340,15 @@ export default function Dashboard() {
                       {q.question_text}
                     </button>
                   ))}
+                      <a href="/past-polls" style={{
+                        background: "none",
+                        border: "1px solid transparent",
+                        borderRadius: 10, padding: "12px 16px",
+                        color: C.muted, fontSize: 13, fontWeight: 500,
+                        textDecoration: "none", display: "block",
+                      }}>
+                        📊 Past Polls
+                      </a>
                 </div>
               )}
             </div>
@@ -374,6 +388,16 @@ export default function Dashboard() {
                       <span style={{ fontSize: 11, color: C.muted }}>left</span>
                     </div>
                   )}
+                  <a href="/past-polls" style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 20, padding: "8px 16px",
+                    fontSize: 13, fontWeight: 600,
+                    color: C.white, textDecoration: "none",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}>
+                    📊 Past Polls
+                  </a>
                   {surveyOpen ? (
                     <a href="/survey" style={{
                       background: C.accent, borderRadius: 20,

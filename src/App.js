@@ -170,6 +170,7 @@ export default function Dashboard() {
   const [timeLeft, setTimeLeft] = useState(null);
   const [surveyOpen, setSurveyOpen] = useState(true);
   const [menuOpen, setMenuOpen]     = useState(false);
+  const [aboutOpen, setAboutOpen]   = useState(false);
 
   // Fetch live results from /api/results
   useEffect(() => {
@@ -224,16 +225,12 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [results]);
 
-      if (window.location.pathname === '/survey') {
+        if (window.location.pathname === '/survey') {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
       <SurveyForm />
     </GoogleReCaptchaProvider>
   );
-}
-
-if (window.location.pathname === '/past-polls') {
-  return <PastPolls />;
 }
 
   // Survey title shown in nav
@@ -340,15 +337,6 @@ if (window.location.pathname === '/past-polls') {
                       {q.question_text}
                     </button>
                   ))}
-                      <a href="/past-polls" style={{
-                        background: "none",
-                        border: "1px solid transparent",
-                        borderRadius: 10, padding: "12px 16px",
-                        color: C.muted, fontSize: 13, fontWeight: 500,
-                        textDecoration: "none", display: "block",
-                      }}>
-                        📊 Past Polls
-                      </a>
                 </div>
               )}
             </div>
@@ -388,16 +376,6 @@ if (window.location.pathname === '/past-polls') {
                       <span style={{ fontSize: 11, color: C.muted }}>left</span>
                     </div>
                   )}
-                  <a href="/past-polls" style={{
-                    background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: 20, padding: "8px 16px",
-                    fontSize: 13, fontWeight: 600,
-                    color: C.white, textDecoration: "none",
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                  }}>
-                    📊 Past Polls
-                  </a>
                   {surveyOpen ? (
                     <a href="/survey" style={{
                       background: C.accent, borderRadius: 20,
@@ -556,6 +534,72 @@ if (window.location.pathname === '/past-polls') {
 
         </div>
       </div>
+
+        {/* About Modal */}
+        {aboutOpen && (
+          <div onClick={() => setAboutOpen(false)} style={{
+            position: "fixed", inset: 0, zIndex: 200,
+            background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "24px",
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: "rgba(20,20,20,0.95)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 24, padding: isMobile ? "32px 24px" : "48px 40px",
+              maxWidth: 520, width: "100%",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+              position: "relative",
+            }}>
+              {/* Close button */}
+              <button onClick={() => setAboutOpen(false)} style={{
+                position: "absolute", top: 16, right: 16,
+                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: "50%", width: 32, height: 32,
+                color: C.muted, fontSize: 16, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>✕</button>
+
+              {/* Logo */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+                <span style={{ fontSize: 32 }}>⚽</span>
+                <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: "0.1em", color: C.white }}>
+                  THE<span style={{ color: C.accent }}>FOOTPOLL</span>
+                </span>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
+
+              {/* Mission label */}
+              <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                Our Mission
+              </div>
+
+              {/* Mission statement */}
+              <p style={{ fontSize: isMobile ? 15 : 17, color: C.white, lineHeight: 1.8, fontWeight: 400, marginBottom: 32 }}>
+                "The Footpoll's mission is to capture the true pulse of football worldwide — delivering real-time insights and authentic fan feedback that reflect the sport's current state, across every corner of the beautiful game."
+              </p>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
+
+              {/* Contact */}
+              <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+                Contact Us
+              </div>
+              <a href="mailto:support@thefootpoll.com" style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(245,197,24,0.08)", border: "1px solid rgba(245,197,24,0.25)",
+                borderRadius: 10, padding: "10px 16px",
+                color: C.accent, textDecoration: "none", fontSize: 14, fontWeight: 500,
+              }}>
+                ✉️ support@thefootpoll.com
+              </a>
+            </div>
+          </div>
+        )}
+
     </div>
   );
 }

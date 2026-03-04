@@ -161,12 +161,12 @@ export default function SurveyForm() {
           padding: isMobile ? "0 16px" : "0 40px", display: "flex", alignItems: "center",
           justifyContent: "space-between", height: 64,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 28 }}>⚽</span>
-            <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 24, letterSpacing: "0.1em", color: C.white }}>
-              THE<span style={{ color: C.accent }}>FOOTPOLL</span>
-            </span>
-          </div>
+            <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <span style={{ fontSize: 28 }}>⚽</span>
+              <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 24, letterSpacing: "0.1em", color: C.white }}>
+                THE<span style={{ color: C.accent }}>FOOTPOLL</span>
+              </span>
+            </a>
           <span style={{ fontSize: isMobile ? 11 : 13, color: C.muted }}>
             {survey ? `${survey.month} ${survey.year} Survey` : "Fan Survey"}
           </span>

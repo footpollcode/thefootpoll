@@ -213,7 +213,7 @@ export default function Dashboard() {
   })) || [];
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>
+    <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", height: "100%", position: "relative", overflowX: "hidden", backgroundColor: "#2D7A3A" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }

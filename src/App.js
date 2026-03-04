@@ -213,7 +213,7 @@ export default function Dashboard() {
   })) || [];
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", height: "100%", position: "relative", overflowX: "hidden", backgroundColor: "#2D7A3A" }}>
+    <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -306,7 +306,7 @@ export default function Dashboard() {
                     color: C.muted, fontSize: 13, fontWeight: 500,
                     cursor: "pointer", textAlign: "left", width: "100%",
                   }}>
-                    🏟️ About
+                    ℹ️ About
                   </button>
                 </div>
               )}
@@ -353,7 +353,7 @@ export default function Dashboard() {
                     color: C.white, cursor: "pointer",
                     display: "inline-flex", alignItems: "center", gap: 6,
                   }}>
-                    🏟️ About
+                    ℹ️ About
                   </button>
                   {/* Past Polls button */}
                   <a href="/past-polls" style={{
@@ -411,25 +411,82 @@ export default function Dashboard() {
           {/* OVERVIEW TAB */}
           {!loading && active === "Overview" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
+
+              {/* 2x2 KPI Grid */}
               <div style={{
-                background: C.card, backdropFilter: "blur(12px)",
-                borderRadius: 20, padding: "32px 24px",
-                border: `1px solid rgba(245,197,24,0.3)`,
-                boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+                display: "grid", gridTemplateColumns: "1fr 1fr",
+                gap: 16, width: "100%", maxWidth: 480,
                 opacity: kpiVisible ? 1 : 0,
                 transform: kpiVisible ? "translateY(0)" : "translateY(20px)",
                 transition: "opacity 0.6s ease, transform 0.6s ease",
-                width: "100%", maxWidth: 480,
-                display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", textAlign: "center",
               }}>
-                <div style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                  Total Responses
+                {/* Total Responses */}
+                <div style={{
+                  background: C.card, backdropFilter: "blur(12px)",
+                  borderRadius: 20, padding: isMobile ? "20px 16px" : "28px 24px",
+                  border: `1px solid rgba(245,197,24,0.3)`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 10, color: C.muted, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+                    Total Responses
+                  </div>
+                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 42 : 56, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
+                    {results ? results.totalResponses.toLocaleString() : "..."}
+                  </div>
                 </div>
-                <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 56 : 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
-                  {results ? results.totalResponses.toLocaleString() : "..."}
+
+                {/* Number of Surveys */}
+                <div style={{
+                  background: C.card, backdropFilter: "blur(12px)",
+                  borderRadius: 20, padding: isMobile ? "20px 16px" : "28px 24px",
+                  border: `1px solid rgba(107,203,119,0.3)`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 10, color: C.muted, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+                    Nr of Surveys
+                  </div>
+                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 42 : 56, color: C.mint, lineHeight: 1, letterSpacing: "0.03em" }}>
+                    2
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>{surveyTitle} Survey</div>
+
+                {/* Topics */}
+                <div style={{
+                  background: C.card, backdropFilter: "blur(12px)",
+                  borderRadius: 20, padding: isMobile ? "20px 16px" : "28px 24px",
+                  border: `1px solid rgba(78,205,196,0.3)`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 10, color: C.muted, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+                    Topics
+                  </div>
+                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 42 : 56, color: C.sky, lineHeight: 1, letterSpacing: "0.03em" }}>
+                    {results?.questions?.length || 0}
+                  </div>
+                </div>
+
+                {/* Nationalities */}
+                <div style={{
+                  background: C.card, backdropFilter: "blur(12px)",
+                  borderRadius: 20, padding: isMobile ? "20px 16px" : "28px 24px",
+                  border: `1px solid rgba(199,125,255,0.3)`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 10, color: C.muted, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+                    Nationalities
+                  </div>
+                  <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 42 : 56, color: C.lavender, lineHeight: 1, letterSpacing: "0.03em" }}>
+                    2
+                  </div>
+                </div>
               </div>
 
               {sentimentQuestion && (

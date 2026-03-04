@@ -84,7 +84,6 @@ function Card({ children, title, style = {} }) {
   );
 }
 
-// Individual question chart card
 function QuestionCard({ question, index, isMobile }) {
   const chartData = question.results.map((r, i) => ({
     name: r.option,
@@ -97,7 +96,6 @@ function QuestionCard({ question, index, isMobile }) {
 
   return (
     <Card title={`Q${index + 1}. ${question.question_text}`}>
-      {/* Top answer badge */}
       {topAnswer && topAnswer.count > 0 && (
         <div style={{
           background: "rgba(245,197,24,0.1)", border: "1px solid rgba(245,197,24,0.25)",
@@ -109,14 +107,10 @@ function QuestionCard({ question, index, isMobile }) {
           <span style={{ fontSize: 12, color: C.muted, marginLeft: "auto" }}>{topAnswer.count} votes</span>
         </div>
       )}
-
       {question.total_answers === 0 ? (
-        <div style={{ textAlign: "center", color: C.muted, fontSize: 14, padding: "20px 0" }}>
-          No responses yet
-        </div>
+        <div style={{ textAlign: "center", color: C.muted, fontSize: 14, padding: "20px 0" }}>No responses yet</div>
       ) : (
         <>
-          {/* Bar chart */}
           <ResponsiveContainer width="100%" height={isMobile ? 140 : 180}>
             <BarChart data={chartData} barSize={28} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -127,8 +121,6 @@ function QuestionCard({ question, index, isMobile }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-
-          {/* Percentage breakdown */}
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {question.results.map((r, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -143,7 +135,6 @@ function QuestionCard({ question, index, isMobile }) {
               </div>
             ))}
           </div>
-
           <div style={{ marginTop: 12, fontSize: 11, color: "rgba(255,255,255,0.2)", textAlign: "right" }}>
             {question.total_answers} total responses
           </div>
@@ -154,64 +145,42 @@ function QuestionCard({ question, index, isMobile }) {
 }
 
 export default function Dashboard() {
-  const [active, setActive]       = useState("Overview");
-  const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);
+  const [active, setActive]         = useState("Overview");
+  const [isMobile, setIsMobile]     = useState(window.innerWidth < 768);
+  const [kpiVisible, setKpiVisible] = useState(false);
+  const [results, setResults]       = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [timeLeft, setTimeLeft]     = useState(null);
+  const [surveyOpen, setSurveyOpen] = useState(true);
+  const [menuOpen, setMenuOpen]     = useState(false);
+  const [aboutOpen, setAboutOpen]   = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  const [kpiVisible, setKpiVisible] = useState(false);
-  const [results, setResults]     = useState(null);
-  const [loading, setLoading]     = useState(true);
 
-  // Countdown timer state
-  const [timeLeft, setTimeLeft] = useState(null);
-  const [surveyOpen, setSurveyOpen] = useState(true);
-  const [menuOpen, setMenuOpen]     = useState(false);
-  const [aboutOpen, setAboutOpen]   = useState(false);
-
-  // Fetch live results from /api/results
   useEffect(() => {
     fetch('/api/results')
       .then(res => res.json())
-      .then(data => {
-        setResults(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Results API error:', err);
-        setLoading(false);
-      });
+      .then(data => { setResults(data); setLoading(false); })
+      .catch(err => { console.error('Results API error:', err); setLoading(false); });
   }, []);
 
   useEffect(() => {
     setTimeout(() => setKpiVisible(true), 200);
   }, []);
 
-  // Countdown timer — updates every second
   useEffect(() => {
     if (!results?.survey?.closes_at) return;
-
     const tick = () => {
       const now = new Date();
       const closes = new Date(results.survey.closes_at);
       const opens = new Date(results.survey.opens_at);
       const diff = closes - now;
-
-      if (now < opens) {
-        setSurveyOpen(false);
-        setTimeLeft(null);
-        return;
-      }
-
-      if (diff <= 0) {
-        setSurveyOpen(false);
-        setTimeLeft(null);
-        return;
-      }
-
+      if (now < opens) { setSurveyOpen(false); setTimeLeft(null); return; }
+      if (diff <= 0) { setSurveyOpen(false); setTimeLeft(null); return; }
       setSurveyOpen(true);
       const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -219,37 +188,28 @@ export default function Dashboard() {
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
       setTimeLeft({ days, hours, minutes, seconds });
     };
-
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [results]);
 
-   if (window.location.pathname === '/survey') {
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
-      <SurveyForm />
-    </GoogleReCaptchaProvider>
-  );
-}
+  if (window.location.pathname === '/survey') {
+    return (
+      <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}>
+        <SurveyForm />
+      </GoogleReCaptchaProvider>
+    );
+  }
 
-if (window.location.pathname === '/past-polls') {
-  return <PastPolls />;
-}
+  if (window.location.pathname === '/past-polls') {
+    return <PastPolls />;
+  }
 
-  // Survey title shown in nav
-  const surveyTitle = results?.survey
-    ? `${results.survey.month} ${results.survey.year}`
-    : "Dashboard";
-
+  const surveyTitle = results?.survey ? `${results.survey.month} ${results.survey.year}` : "Dashboard";
   const navItems = isMobile ? ["Overview"] : ["Overview", ...( results?.questions?.map((q, i) => `Q${i + 1}`) || [] )];
-
-  // Build pie data for overview from Q3 (happiness question - index 2)
   const sentimentQuestion = results?.questions?.[2];
   const pieData = sentimentQuestion?.results?.map((r, i) => ({
-    name: r.option,
-    value: r.percentage,
-    color: COLORS[i % COLORS.length],
+    name: r.option, value: r.percentage, color: COLORS[i % COLORS.length],
   })) || [];
 
   return (
@@ -275,8 +235,7 @@ if (window.location.pathname === '/past-polls') {
             /* ── MOBILE NAVBAR ── */
             <div>
               <div style={{ padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-
-                {/* Left — Hamburger menu */}
+                {/* Left — Hamburger */}
                 <button onClick={() => setMenuOpen(o => !o)} style={{
                   background: "none", border: "1px solid rgba(255,255,255,0.15)",
                   borderRadius: 8, padding: "8px 10px", cursor: "pointer",
@@ -286,7 +245,6 @@ if (window.location.pathname === '/past-polls') {
                   <div style={{ width: 18, height: 2, background: menuOpen ? C.accent : C.white, borderRadius: 2, transition: "all 0.2s" }} />
                   <div style={{ width: 18, height: 2, background: menuOpen ? C.accent : C.white, borderRadius: 2, transition: "all 0.2s" }} />
                 </button>
-
                 {/* Center — Logo */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
                   <span style={{ fontSize: 22 }}>⚽</span>
@@ -294,25 +252,22 @@ if (window.location.pathname === '/past-polls') {
                     THE<span style={{ color: C.accent }}>FOOTPOLL</span>
                   </span>
                 </div>
-
                 {/* Right — Survey button */}
                 {surveyOpen ? (
                   <a href="/survey" style={{
-                    background: C.accent, borderRadius: 20,
-                    padding: "8px 14px", fontSize: 13, fontWeight: 700,
-                    color: "#000", textDecoration: "none",
+                    background: C.accent, borderRadius: 20, padding: "8px 14px",
+                    fontSize: 13, fontWeight: 700, color: "#000", textDecoration: "none",
                     display: "inline-flex", alignItems: "center",
                   }}>⚽</a>
                 ) : (
                   <div style={{
                     background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: 20, padding: "8px 14px", fontSize: 13,
-                    color: C.muted, cursor: "not-allowed",
+                    borderRadius: 20, padding: "8px 14px", fontSize: 13, color: C.muted, cursor: "not-allowed",
                   }}>🔒</div>
                 )}
               </div>
 
-              {/* Dropdown menu */}
+              {/* Mobile Dropdown */}
               {menuOpen && (
                 <div style={{
                   background: "rgba(0,0,0,0.95)", borderTop: "1px solid rgba(255,255,255,0.08)",
@@ -333,14 +288,26 @@ if (window.location.pathname === '/past-polls') {
                       borderRadius: 10, padding: "12px 16px",
                       color: active === `Q${i + 1}` ? C.accent : C.muted,
                       fontSize: 13, fontWeight: 500, textAlign: "left", cursor: "pointer",
-                      display: "flex", alignItems: "center", gap: 10,
                     }}>
-                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: active === `Q${i+1}` ? C.accent : "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: active === `Q${i+1}` ? "#000" : C.muted, flexShrink: 0 }}>
-                        {i + 1}
-                      </div>
-                      {q.question_text}
+                      Q{i + 1}
                     </button>
                   ))}
+                  <a href="/past-polls" style={{
+                    background: "none", border: "1px solid transparent",
+                    borderRadius: 10, padding: "12px 16px",
+                    color: C.muted, fontSize: 13, fontWeight: 500,
+                    textDecoration: "none", display: "block",
+                  }}>
+                    📊 Past Polls
+                  </a>
+                  <button onClick={() => { setAboutOpen(true); setMenuOpen(false); }} style={{
+                    background: "none", border: "1px solid transparent",
+                    borderRadius: 10, padding: "12px 16px",
+                    color: C.muted, fontSize: 13, fontWeight: 500,
+                    cursor: "pointer", textAlign: "left", width: "100%",
+                  }}>
+                    ℹ️ About
+                  </button>
                 </div>
               )}
             </div>
@@ -353,7 +320,6 @@ if (window.location.pathname === '/past-polls') {
                   THE<span style={{ color: C.accent }}>FOOTPOLL</span>
                 </span>
               </div>
-
               <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
                 {navItems.map(item => (
                   <button key={item} className="nav-btn" onClick={() => setActive(item)} style={{
@@ -366,11 +332,11 @@ if (window.location.pathname === '/past-polls') {
                   </button>
                 ))}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
+                  {/* Countdown timer */}
                   {timeLeft && (
                     <div style={{
                       display: "flex", alignItems: "center", gap: 6,
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
                       borderRadius: 20, padding: "7px 14px",
                     }}>
                       <span style={{ fontSize: 13, color: C.muted }}>🕐</span>
@@ -380,11 +346,29 @@ if (window.location.pathname === '/past-polls') {
                       <span style={{ fontSize: 11, color: C.muted }}>left</span>
                     </div>
                   )}
+                  {/* About button */}
+                  <button onClick={() => setAboutOpen(true)} style={{
+                    background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 20, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                    color: C.white, cursor: "pointer",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}>
+                    ℹ️ About
+                  </button>
+                  {/* Past Polls button */}
+                  <a href="/past-polls" style={{
+                    background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 20, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                    color: C.white, textDecoration: "none",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                  }}>
+                    📊 Past Polls
+                  </a>
+                  {/* Take Survey button */}
                   {surveyOpen ? (
                     <a href="/survey" style={{
-                      background: C.accent, borderRadius: 20,
-                      padding: "8px 20px", fontSize: 14, fontWeight: 700,
-                      color: "#000", textDecoration: "none",
+                      background: C.accent, borderRadius: 20, padding: "8px 20px",
+                      fontSize: 14, fontWeight: 700, color: "#000", textDecoration: "none",
                       display: "inline-flex", alignItems: "center", gap: 6,
                     }}>⚽ Take Survey</a>
                   ) : (
@@ -404,7 +388,7 @@ if (window.location.pathname === '/past-polls') {
         {/* Main Content */}
         <div style={{ padding: isMobile ? "20px 16px" : "32px 40px", maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
-          {/* Page title - centered */}
+          {/* Page title */}
           <div style={{ textAlign: "center" }}>
             <h2 style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 20 : 28, letterSpacing: "0.08em", color: C.white }}>
               {active === "Overview" && "FOOTBALL STATUS OVERVIEW"}
@@ -417,17 +401,8 @@ if (window.location.pathname === '/past-polls') {
 
           {/* Loading state */}
           {loading && (
-            <div style={{
-              display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
-              paddingTop: "150px",
-            }}>
-              <style>{`
-                @keyframes bounce {
-                  from { transform: translateY(0px); }
-                  to   { transform: translateY(-12px); }
-                }
-              `}</style>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "150px" }}>
+              <style>{`@keyframes bounce { from { transform: translateY(0px); } to { transform: translateY(-12px); } }`}</style>
               <div style={{ fontSize: 36, animation: "bounce 0.9s infinite alternate", marginBottom: 48 }}>⚽</div>
               <span style={{ fontSize: 14, color: C.muted, fontWeight: 500 }}>Loading results...</span>
             </div>
@@ -436,8 +411,6 @@ if (window.location.pathname === '/past-polls') {
           {/* OVERVIEW TAB */}
           {!loading && active === "Overview" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
-
-              {/* Total Responses KPI */}
               <div style={{
                 background: C.card, backdropFilter: "blur(12px)",
                 borderRadius: 20, padding: "32px 24px",
@@ -456,17 +429,11 @@ if (window.location.pathname === '/past-polls') {
                 <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: isMobile ? 56 : 72, color: C.accent, lineHeight: 1, letterSpacing: "0.03em" }}>
                   {results ? results.totalResponses.toLocaleString() : "..."}
                 </div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>
-                  {surveyTitle} Survey
-                </div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>{surveyTitle} Survey</div>
               </div>
 
-              {/* Sentiment pie — uses Q3 happiness question */}
               {sentimentQuestion && (
-                <Card
-                  title={sentimentQuestion.question_text}
-                  style={{ width: "100%", maxWidth: 480 }}
-                >
+                <Card title={sentimentQuestion.question_text} style={{ width: "100%", maxWidth: 480 }}>
                   {pieData.every(d => d.value === 0) ? (
                     <div style={{ textAlign: "center", color: C.muted, fontSize: 14, padding: "20px 0" }}>No responses yet</div>
                   ) : (
@@ -493,7 +460,7 @@ if (window.location.pathname === '/past-polls') {
             </div>
           )}
 
-          {/* Mobile Q selector — shown only on mobile */}
+          {/* Mobile Q selector */}
           {!loading && isMobile && active === "Overview" && results?.questions && (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <p style={{ color: C.muted, fontSize: 13, textAlign: "center" }}>Tap a question to see results:</p>
@@ -519,12 +486,10 @@ if (window.location.pathname === '/past-polls') {
               background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: 10, padding: "10px 16px", color: C.white,
               fontSize: 13, fontWeight: 600, cursor: "pointer", alignSelf: "flex-start",
-            }}>
-              ← Back
-            </button>
+            }}>← Back</button>
           )}
 
-          {/* INDIVIDUAL QUESTION TABS */}
+          {/* Individual Question Tabs */}
           {!loading && active !== "Overview" && results?.questions && (() => {
             const qIndex = parseInt(active.replace("Q", "")) - 1;
             const question = results.questions[qIndex];
@@ -539,70 +504,54 @@ if (window.location.pathname === '/past-polls') {
         </div>
       </div>
 
-        {/* About Modal */}
-        {aboutOpen && (
-          <div onClick={() => setAboutOpen(false)} style={{
-            position: "fixed", inset: 0, zIndex: 200,
-            background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "24px",
+      {/* About Modal */}
+      {aboutOpen && (
+        <div onClick={() => setAboutOpen(false)} style={{
+          position: "fixed", inset: 0, zIndex: 200,
+          background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: "24px",
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: "rgba(20,20,20,0.95)", border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 24, padding: isMobile ? "32px 24px" : "48px 40px",
+            maxWidth: 520, width: "100%",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.6)", position: "relative",
           }}>
-            <div onClick={e => e.stopPropagation()} style={{
-              background: "rgba(20,20,20,0.95)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 24, padding: isMobile ? "32px 24px" : "48px 40px",
-              maxWidth: 520, width: "100%",
-              boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
-              position: "relative",
-            }}>
-              {/* Close button */}
-              <button onClick={() => setAboutOpen(false)} style={{
-                position: "absolute", top: 16, right: 16,
-                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-                borderRadius: "50%", width: 32, height: 32,
-                color: C.muted, fontSize: 16, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>✕</button>
-
-              {/* Logo */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-                <span style={{ fontSize: 32 }}>⚽</span>
-                <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: "0.1em", color: C.white }}>
-                  THE<span style={{ color: C.accent }}>FOOTPOLL</span>
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
-
-              {/* Mission label */}
-              <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                Our Mission
-              </div>
-
-              {/* Mission statement */}
-              <p style={{ fontSize: isMobile ? 15 : 17, color: C.white, lineHeight: 1.8, fontWeight: 400, marginBottom: 32 }}>
-                "The Footpoll's mission is to capture the true pulse of football worldwide — delivering real-time insights and authentic fan feedback that reflect the sport's current state, across every corner of the beautiful game."
-              </p>
-
-              {/* Divider */}
-              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
-
-              {/* Contact */}
-              <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
-                Contact Us
-              </div>
-              <a href="mailto:support@thefootpoll.com" style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(245,197,24,0.08)", border: "1px solid rgba(245,197,24,0.25)",
-                borderRadius: 10, padding: "10px 16px",
-                color: C.accent, textDecoration: "none", fontSize: 14, fontWeight: 500,
-              }}>
-                ✉️ support@thefootpoll.com
-              </a>
+            <button onClick={() => setAboutOpen(false)} style={{
+              position: "absolute", top: 16, right: 16,
+              background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: "50%", width: 32, height: 32,
+              color: C.muted, fontSize: 16, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>✕</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+              <span style={{ fontSize: 32 }}>⚽</span>
+              <span style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: "0.1em", color: C.white }}>
+                THE<span style={{ color: C.accent }}>FOOTPOLL</span>
+              </span>
             </div>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
+            <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+              Our Mission
+            </div>
+            <p style={{ fontSize: isMobile ? 15 : 17, color: C.white, lineHeight: 1.8, fontWeight: 400, marginBottom: 32 }}>
+              "The Footpoll's mission is to capture the true pulse of football worldwide — delivering real-time insights and authentic fan feedback that reflect the sport's current state, across every corner of the beautiful game."
+            </p>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
+            <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+              Contact Us
+            </div>
+            <a href="mailto:support@thefootpoll.com" style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "rgba(245,197,24,0.08)", border: "1px solid rgba(245,197,24,0.25)",
+              borderRadius: 10, padding: "10px 16px",
+              color: C.accent, textDecoration: "none", fontSize: 14, fontWeight: 500,
+            }}>
+              ✉️ support@thefootpoll.com
+            </a>
           </div>
-        )}
+        </div>
+      )}
 
     </div>
   );

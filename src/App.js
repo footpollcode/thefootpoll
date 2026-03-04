@@ -205,7 +205,6 @@ export default function Dashboard() {
     return <PastPolls />;
   }
 
-  const surveyTitle = results?.survey ? `${results.survey.month} ${results.survey.year}` : "Dashboard";
   const navItems = isMobile ? ["Overview"] : ["Overview", ...( results?.questions?.map((q, i) => `Q${i + 1}`) || [] )];
   const sentimentQuestion = results?.questions?.[2];
   const pieData = sentimentQuestion?.results?.map((r, i) => ({
